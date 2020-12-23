@@ -4,6 +4,7 @@ project(LethalAI)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_subdirectory(helpers)
+add_subdirectory(environment)
 
 add_library(LethalAI SHARED lethalai.cpp)
 

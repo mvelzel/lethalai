@@ -5,7 +5,11 @@
 
 namespace environment {
     class GameState {
+        private:
+            Player players[4];
         public:
+            Player* GetPlayers();
+            void SetPlayers(Player players[4]);
 
     };
 }
