@@ -1,6 +1,8 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
+#include<ostream>
+
 namespace environment {
     class Player {
         private:
@@ -14,6 +16,8 @@ namespace environment {
             signed int hitstun_countdown;
             unsigned int special_meter;
         public:
+            Player();
+
             unsigned int GetXCoord();
             void SetXCoord(unsigned int x_coord);
             unsigned int GetYCoord();
@@ -32,6 +36,8 @@ namespace environment {
             void SetHitstunCountdown(signed int hitstun_countdown);
             unsigned int GetSpecialMeter();
             void SetSpecialMeter(unsigned int special_meter);
+
+            friend std::ostream& operator<<(std::ostream& output, const Player& player);
     };
 }
 

@@ -1,6 +1,18 @@
 #include "player.h"
 
 namespace environment {
+    Player::Player() {
+        this->x_coord = 0;
+        this->y_coord = 0;
+        this->facing_direction = 0;
+        this->x_velocity = 0;
+        this->y_velocity = 0;
+        this->character_state = 0;
+        this->animation_state = 0;
+        this->hitstun_countdown = 0;
+        this->special_meter = 0;
+    }
+
     unsigned int Player::GetXCoord() {
         return this->x_coord;
     }
@@ -62,5 +74,17 @@ namespace environment {
     }
     void Player::SetSpecialMeter(unsigned int special_meter) {
         this->special_meter = special_meter;
+    }
+
+    std::ostream& operator<<(std::ostream& output, const Player& player) {
+        return output << "Player{x_coord=" << player.x_coord <<
+            ", y_coord=" << player.y_coord <<
+            ", facing_direction=" << (int) player.facing_direction <<
+            ", x_velocity=" << player.x_velocity <<
+            ", y_velocity=" << player.y_velocity <<
+            ", character_state=" << player.character_state <<
+            ", animation_state=" << player.animation_state <<
+            ", hitstun_countdown=" << player.hitstun_countdown <<
+            ", special_meter=" << player.special_meter << "}";
     }
 }

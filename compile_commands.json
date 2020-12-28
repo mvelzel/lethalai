@@ -1,17 +1,32 @@
 [
 {
-  "directory": "C:/Users/Formadill/Documents/LethalAI/build",
-  "command": "C:\\PROGRA~2\\MIB055~1\\2019\\COMMUN~1\\VC\\Tools\\MSVC\\1428~1.293\\bin\\Hostx86\\x86\\cl.exe  /nologo /TP -DLethalAI_EXPORTS  /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /FoCMakeFiles\\LethalAI.dir\\lethalai.cpp.obj /FdCMakeFiles\\LethalAI.dir\\ /FS -c C:\\Users\\Formadill\\Documents\\LethalAI\\lethalai.cpp",
-  "file": "C:/Users/Formadill/Documents/LethalAI/lethalai.cpp"
+  "directory": "C:/Users/mvelz/Documents/LethalAI/build",
+  "command": "C:\\PROGRA~2\\MICROS~1\\2019\\COMMUN~1\\VC\\Tools\\MSVC\\1426~1.288\\bin\\Hostx86\\x86\\cl.exe  /nologo /TP -DLethalAI_EXPORTS  /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /FoCMakeFiles\\LethalAI.dir\\lethalai.cpp.obj /FdCMakeFiles\\LethalAI.dir\\ /FS -c C:\\Users\\mvelz\\Documents\\LethalAI\\lethalai.cpp",
+  "file": "C:/Users/mvelz/Documents/LethalAI/lethalai.cpp"
 },
 {
-  "directory": "C:/Users/Formadill/Documents/LethalAI/build/helpers",
-  "command": "C:\\PROGRA~2\\MIB055~1\\2019\\COMMUN~1\\VC\\Tools\\MSVC\\1428~1.293\\bin\\Hostx86\\x86\\cl.exe  /nologo /TP   /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /FoCMakeFiles\\Logger.dir\\logger.cpp.obj /FdCMakeFiles\\Logger.dir\\Logger.pdb /FS -c C:\\Users\\Formadill\\Documents\\LethalAI\\helpers\\logger.cpp",
-  "file": "C:/Users/Formadill/Documents/LethalAI/helpers/logger.cpp"
+  "directory": "C:/Users/mvelz/Documents/LethalAI/build/helpers",
+  "command": "C:\\PROGRA~2\\MICROS~1\\2019\\COMMUN~1\\VC\\Tools\\MSVC\\1426~1.288\\bin\\Hostx86\\x86\\cl.exe  /nologo /TP   /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /FoCMakeFiles\\Logger.dir\\logger.cpp.obj /FdCMakeFiles\\Logger.dir\\Logger.pdb /FS -c C:\\Users\\mvelz\\Documents\\LethalAI\\helpers\\logger.cpp",
+  "file": "C:/Users/mvelz/Documents/LethalAI/helpers/logger.cpp"
 },
 {
-  "directory": "C:/Users/Formadill/Documents/LethalAI/build/helpers",
-  "command": "C:\\PROGRA~2\\MIB055~1\\2019\\COMMUN~1\\VC\\Tools\\MSVC\\1428~1.293\\bin\\Hostx86\\x86\\cl.exe  /nologo /TP   /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /FoCMakeFiles\\CodeInjector.dir\\code_injector.cpp.obj /FdCMakeFiles\\CodeInjector.dir\\CodeInjector.pdb /FS -c C:\\Users\\Formadill\\Documents\\LethalAI\\helpers\\code_injector.cpp",
-  "file": "C:/Users/Formadill/Documents/LethalAI/helpers/code_injector.cpp"
+  "directory": "C:/Users/mvelz/Documents/LethalAI/build/helpers",
+  "command": "C:\\PROGRA~2\\MICROS~1\\2019\\COMMUN~1\\VC\\Tools\\MSVC\\1426~1.288\\bin\\Hostx86\\x86\\cl.exe  /nologo /TP   /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /FoCMakeFiles\\CodeInjector.dir\\code_injector.cpp.obj /FdCMakeFiles\\CodeInjector.dir\\CodeInjector.pdb /FS -c C:\\Users\\mvelz\\Documents\\LethalAI\\helpers\\code_injector.cpp",
+  "file": "C:/Users/mvelz/Documents/LethalAI/helpers/code_injector.cpp"
+},
+{
+  "directory": "C:/Users/mvelz/Documents/LethalAI/build/environment",
+  "command": "C:\\PROGRA~2\\MICROS~1\\2019\\COMMUN~1\\VC\\Tools\\MSVC\\1426~1.288\\bin\\Hostx86\\x86\\cl.exe  /nologo /TP   /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /FoCMakeFiles\\GameState.dir\\game_state.cpp.obj /FdCMakeFiles\\GameState.dir\\GameState.pdb /FS -c C:\\Users\\mvelz\\Documents\\LethalAI\\environment\\game_state.cpp",
+  "file": "C:/Users/mvelz/Documents/LethalAI/environment/game_state.cpp"
+},
+{
+  "directory": "C:/Users/mvelz/Documents/LethalAI/build/environment",
+  "command": "C:\\PROGRA~2\\MICROS~1\\2019\\COMMUN~1\\VC\\Tools\\MSVC\\1426~1.288\\bin\\Hostx86\\x86\\cl.exe  /nologo /TP   /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /FoCMakeFiles\\StateObserver.dir\\state_observer.cpp.obj /FdCMakeFiles\\StateObserver.dir\\StateObserver.pdb /FS -c C:\\Users\\mvelz\\Documents\\LethalAI\\environment\\state_observer.cpp",
+  "file": "C:/Users/mvelz/Documents/LethalAI/environment/state_observer.cpp"
+},
+{
+  "directory": "C:/Users/mvelz/Documents/LethalAI/build/environment/game_model",
+  "command": "C:\\PROGRA~2\\MICROS~1\\2019\\COMMUN~1\\VC\\Tools\\MSVC\\1426~1.288\\bin\\Hostx86\\x86\\cl.exe  /nologo /TP   /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /FoCMakeFiles\\Player.dir\\player.cpp.obj /FdCMakeFiles\\Player.dir\\Player.pdb /FS -c C:\\Users\\mvelz\\Documents\\LethalAI\\environment\\game_model\\player.cpp",
+  "file": "C:/Users/mvelz/Documents/LethalAI/environment/game_model/player.cpp"
 }
 ]

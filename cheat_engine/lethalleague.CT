@@ -5,7 +5,7 @@
       <ID>2896</ID>
       <Description>"ACTIVATION SCRIPT"</Description>
       <Options moHideChildren="1"/>
-      <LastState Activated="1"/>
+      <LastState/>
       <VariableType>Auto Assembler Script</VariableType>
       <AssemblerScript>{
 Game   : LethalLeague.exe
@@ -25,7 +25,6 @@ label(player_end)
 label(player_not_one)
 
 label(ballbase_code)
-label(ballbase_original)
 label(ballbase_return)
 
 globalalloc(p1base, 4)
@@ -49,7 +48,8 @@ globalalloc(ballstate, 4)
 code:
 
 player_code:
-  mov ecx,[esi+00000194]
+  mov edx,[esi]
+  mov edx,[edx+4C]
   push eax
   push ebx
   push ecx
@@ -79,38 +79,40 @@ player_end:
 
 ballbase_code:
   push ebx
+  mov eax,[ecx]
+  mov edx,[eax+40]
   mov [ballbase], esi
   mov ebx, [esi+14]
   mov [ballcoords], ebx
   mov ebx, [esi+194]
   mov [ballstate], ebx
   pop ebx
-ballbase_original:
-  mov ecx,[esi+14]
-  lea eax,[ebp-68]
   jmp ballbase_return
 
-"lethalleague.exe"+100B8A:
+"lethalleague.exe"+100BA5:
   jmp player_code
-  nop
 
 player_return:
 
-"lethalleague.exe"+24F65:
+"lethalleague.exe"+102AC3:
   jmp ballbase_code
-  nop
 
 ballbase_return:
 
 
 [DISABLE]
 
-"lethalleague.exe"+100B8A:
-  mov ecx,[esi+00000194]
+"lethalleague.exe"+100BA5:
+  mov edx,[esi]
+  mov edx,[edx+4C]
 
-"lethalleague.exe"+24F65:
-  mov ecx,[esi+14]
-  lea eax,[ebp-68]
+"lethalleague.exe"+102AC3:
+  mov eax,[ecx]
+  mov edx,[eax+40]
+
+{ End of frame routine }
+"lethalleague.exe"+102C9F:
+  call lethalleague.exe+145862
 
 unregistersymbol(p1base)
 unregistersymbol(p2base)
@@ -136,8 +138,8 @@ dealloc(code)
     <CheatEntry>
       <ID>3820</ID>
       <Description>"Ball Base"</Description>
-      <Options moHideChildren="1"/>
-      <LastState Value="" Activated="1" RealAddress="150A7FD0"/>
+      <Options moManualExpandCollapse="1"/>
+      <LastState Value="" RealAddress="00000000"/>
       <ShowAsSigned>0</ShowAsSigned>
       <GroupHeader>1</GroupHeader>
       <Address>[ballbase]</Address>
@@ -145,8 +147,7 @@ dealloc(code)
         <CheatEntry>
           <ID>14</ID>
           <Description>"Ball Coords"</Description>
-          <Options moHideChildren="1"/>
-          <LastState Value="0" RealAddress="15088F38"/>
+          <Options moManualExpandCollapse="1"/>
           <ShowAsSigned>0</ShowAsSigned>
           <VariableType>4 Bytes</VariableType>
           <Address>[ballcoords]</Address>
@@ -154,7 +155,6 @@ dealloc(code)
             <CheatEntry>
               <ID>15</ID>
               <Description>"X"</Description>
-              <LastState Value="65536000" RealAddress="15088F50"/>
               <ShowAsSigned>0</ShowAsSigned>
               <VariableType>4 Bytes</VariableType>
               <Address>ballcoords</Address>
@@ -165,7 +165,6 @@ dealloc(code)
             <CheatEntry>
               <ID>16</ID>
               <Description>"Y"</Description>
-              <LastState Value="28835840" RealAddress="15088F54"/>
               <ShowAsSigned>0</ShowAsSigned>
               <VariableType>4 Bytes</VariableType>
               <Address>ballcoords</Address>
@@ -178,8 +177,7 @@ dealloc(code)
         <CheatEntry>
           <ID>22</ID>
           <Description>"Ball State"</Description>
-          <Options moHideChildren="1"/>
-          <LastState Value="1932056" RealAddress="15054500"/>
+          <Options moManualExpandCollapse="1"/>
           <ShowAsSigned>0</ShowAsSigned>
           <VariableType>4 Bytes</VariableType>
           <Address>[ballstate]</Address>
@@ -187,7 +185,6 @@ dealloc(code)
             <CheatEntry>
               <ID>24</ID>
               <Description>"X Velocity"</Description>
-              <LastState Value="-720896" RealAddress="15054510"/>
               <ShowAsSigned>1</ShowAsSigned>
               <VariableType>4 Bytes</VariableType>
               <Address>ballstate</Address>
@@ -198,7 +195,6 @@ dealloc(code)
             <CheatEntry>
               <ID>25</ID>
               <Description>"Y Velocity"</Description>
-              <LastState Value="0" RealAddress="15054514"/>
               <ShowAsSigned>1</ShowAsSigned>
               <VariableType>4 Bytes</VariableType>
               <Address>ballstate</Address>
@@ -209,7 +205,6 @@ dealloc(code)
             <CheatEntry>
               <ID>31</ID>
               <Description>"Hitstun?"</Description>
-              <LastState Value="1" RealAddress="1505451C"/>
               <ShowAsSigned>1</ShowAsSigned>
               <VariableType>Byte</VariableType>
               <Address>ballstate</Address>
@@ -220,7 +215,6 @@ dealloc(code)
             <CheatEntry>
               <ID>32</ID>
               <Description>"Ball Exists?"</Description>
-              <LastState Value="1" RealAddress="1505451D"/>
               <ShowAsSigned>1</ShowAsSigned>
               <VariableType>Byte</VariableType>
               <Address>ballstate</Address>
@@ -231,7 +225,6 @@ dealloc(code)
             <CheatEntry>
               <ID>33</ID>
               <Description>"Hitstun Countdown?"</Description>
-              <LastState Value="-1091" RealAddress="15054628"/>
               <ShowAsSigned>1</ShowAsSigned>
               <VariableType>4 Bytes</VariableType>
               <Address>ballstate</Address>
@@ -242,7 +235,6 @@ dealloc(code)
             <CheatEntry>
               <ID>23</ID>
               <Description>"Ball Speed"</Description>
-              <LastState Value="11" RealAddress="1505462C"/>
               <ShowAsSigned>0</ShowAsSigned>
               <VariableType>4 Bytes</VariableType>
               <Address>ballstate</Address>
@@ -253,7 +245,6 @@ dealloc(code)
             <CheatEntry>
               <ID>29</ID>
               <Description>"Ball Tag"</Description>
-              <LastState Value="1" RealAddress="15054630"/>
               <ShowAsSigned>1</ShowAsSigned>
               <VariableType>4 Bytes</VariableType>
               <Address>ballstate</Address>
@@ -264,7 +255,6 @@ dealloc(code)
             <CheatEntry>
               <ID>30</ID>
               <Description>"Direction (Last Wall Hit)"</Description>
-              <LastState Value="1" RealAddress="15054654"/>
               <ShowAsSigned>0</ShowAsSigned>
               <VariableType>4 Bytes</VariableType>
               <Address>ballstate</Address>
@@ -275,7 +265,6 @@ dealloc(code)
             <CheatEntry>
               <ID>34</ID>
               <Description>"Hit Counter"</Description>
-              <LastState Value="3" RealAddress="15054658"/>
               <ShowAsSigned>0</ShowAsSigned>
               <VariableType>4 Bytes</VariableType>
               <Address>ballstate</Address>
@@ -286,7 +275,6 @@ dealloc(code)
             <CheatEntry>
               <ID>35</ID>
               <Description>"Serve Reset Counter?"</Description>
-              <LastState Value="0" RealAddress="15054678"/>
               <ShowAsSigned>0</ShowAsSigned>
               <VariableType>4 Bytes</VariableType>
               <Address>ballstate</Address>
@@ -297,7 +285,6 @@ dealloc(code)
             <CheatEntry>
               <ID>36</ID>
               <Description>"Serve Lower Counter?"</Description>
-              <LastState Value="0" RealAddress="1505467C"/>
               <ShowAsSigned>0</ShowAsSigned>
               <VariableType>4 Bytes</VariableType>
               <Address>ballstate</Address>
@@ -308,7 +295,6 @@ dealloc(code)
             <CheatEntry>
               <ID>38</ID>
               <Description>"Candyball Horizontal?"</Description>
-              <LastState Value="16777283" RealAddress="1505468F"/>
               <ShowAsSigned>0</ShowAsSigned>
               <VariableType>4 Bytes</VariableType>
               <Address>ballstate</Address>
@@ -319,7 +305,6 @@ dealloc(code)
             <CheatEntry>
               <ID>37</ID>
               <Description>"Candyball Vertical?"</Description>
-              <LastState Value="65536" RealAddress="15054690"/>
               <ShowAsSigned>0</ShowAsSigned>
               <VariableType>4 Bytes</VariableType>
               <Address>ballstate</Address>
@@ -332,10 +317,220 @@ dealloc(code)
       </CheatEntries>
     </CheatEntry>
     <CheatEntry>
+      <ID>3819</ID>
+      <Description>"Player 1"</Description>
+      <Options moManualExpandCollapse="1"/>
+      <LastState Value="" RealAddress="00000000"/>
+      <ShowAsSigned>0</ShowAsSigned>
+      <GroupHeader>1</GroupHeader>
+      <Address>[p1base]</Address>
+      <CheatEntries>
+        <CheatEntry>
+          <ID>90</ID>
+          <Description>"Player 1 Coords (+14)"</Description>
+          <Options moManualExpandCollapse="1"/>
+          <ShowAsSigned>0</ShowAsSigned>
+          <VariableType>4 Bytes</VariableType>
+          <Address>[p1coords]</Address>
+          <CheatEntries>
+            <CheatEntry>
+              <ID>91</ID>
+              <Description>"Player X Coord"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>4 Bytes</VariableType>
+              <Address>p1coords</Address>
+              <Offsets>
+                <Offset>18</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>92</ID>
+              <Description>"Player Y Coord"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>4 Bytes</VariableType>
+              <Address>p1coords</Address>
+              <Offsets>
+                <Offset>1C</Offset>
+              </Offsets>
+            </CheatEntry>
+          </CheatEntries>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>99</ID>
+          <Description>"Player 1 State (+194)"</Description>
+          <Options moManualExpandCollapse="1"/>
+          <ShowAsSigned>0</ShowAsSigned>
+          <VariableType>4 Bytes</VariableType>
+          <Address>[p1state]</Address>
+          <CheatEntries>
+            <CheatEntry>
+              <ID>100</ID>
+              <Description>"Facing Direction"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>Byte</VariableType>
+              <Address>p1state</Address>
+              <Offsets>
+                <Offset>4</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>101</ID>
+              <Description>"X Velocity"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>4 Bytes</VariableType>
+              <Address>p1state</Address>
+              <Offsets>
+                <Offset>10</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>102</ID>
+              <Description>"Y Velocity"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>4 Bytes</VariableType>
+              <Address>p1state</Address>
+              <Offsets>
+                <Offset>14</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>103</ID>
+              <Description>"Character Exists?"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>Byte</VariableType>
+              <Address>p1state</Address>
+              <Offsets>
+                <Offset>1d</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>104</ID>
+              <Description>"Touching Ground"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>Byte</VariableType>
+              <Address>p1state</Address>
+              <Offsets>
+                <Offset>1e</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>105</ID>
+              <Description>"Touching Right Wall"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>Byte</VariableType>
+              <Address>p1state</Address>
+              <Offsets>
+                <Offset>1f</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>107</ID>
+              <Description>"Touching Left Wall"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>Byte</VariableType>
+              <Address>p1state</Address>
+              <Offsets>
+                <Offset>20</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>106</ID>
+              <Description>"Touching Ceiling"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>Byte</VariableType>
+              <Address>p1state</Address>
+              <Offsets>
+                <Offset>21</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>108</ID>
+              <Description>"Character State"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>4 Bytes</VariableType>
+              <Address>p1state</Address>
+              <Offsets>
+                <Offset>134</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>109</ID>
+              <Description>"Animation State"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>4 Bytes</VariableType>
+              <Address>p1state</Address>
+              <Offsets>
+                <Offset>138</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>110</ID>
+              <Description>"Hitstun Countdown"</Description>
+              <ShowAsSigned>1</ShowAsSigned>
+              <VariableType>4 Bytes</VariableType>
+              <Address>p1state</Address>
+              <Offsets>
+                <Offset>13c</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>111</ID>
+              <Description>"Change Animation State Countdown"</Description>
+              <ShowAsSigned>1</ShowAsSigned>
+              <VariableType>4 Bytes</VariableType>
+              <Address>p1state</Address>
+              <Offsets>
+                <Offset>140</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>112</ID>
+              <Description>"Special Meter"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>4 Bytes</VariableType>
+              <Address>p1state</Address>
+              <Offsets>
+                <Offset>150</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>113</ID>
+              <Description>"Charge?"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>4 Bytes</VariableType>
+              <Address>p1state</Address>
+              <Offsets>
+                <Offset>154</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>114</ID>
+              <Description>"?In Hitstun?"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>Byte</VariableType>
+              <Address>p1state</Address>
+              <Offsets>
+                <Offset>160</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>115</ID>
+              <Description>"?Special Activated?"</Description>
+              <ShowAsSigned>0</ShowAsSigned>
+              <VariableType>Byte</VariableType>
+              <Address>p1state</Address>
+              <Offsets>
+                <Offset>161</Offset>
+              </Offsets>
+            </CheatEntry>
+          </CheatEntries>
+        </CheatEntry>
+      </CheatEntries>
+    </CheatEntry>
+    <CheatEntry>
       <ID>74</ID>
       <Description>"Render Stuff"</Description>
       <Options moHideChildren="1"/>
-      <LastState Value="1935520" RealAddress="0D599D10"/>
       <VariableType>4 Bytes</VariableType>
       <Address>"lethalleague.exe"+001A9E54</Address>
       <Offsets>
@@ -351,7 +546,6 @@ dealloc(code)
         <CheatEntry>
           <ID>75</ID>
           <Description>"Pan Enable"</Description>
-          <LastState Value="1" RealAddress="0D599D3C"/>
           <ShowAsSigned>0</ShowAsSigned>
           <VariableType>4 Bytes</VariableType>
           <Address>"lethalleague.exe"+001A9E54</Address>
@@ -368,7 +562,6 @@ dealloc(code)
         <CheatEntry>
           <ID>82</ID>
           <Description>"Camera Pan X"</Description>
-          <LastState Value="690" RealAddress="0D599E04"/>
           <ShowAsSigned>0</ShowAsSigned>
           <VariableType>4 Bytes</VariableType>
           <Address>"lethalleague.exe"+001A9E54</Address>
@@ -385,7 +578,6 @@ dealloc(code)
         <CheatEntry>
           <ID>79</ID>
           <Description>"Camera Pan Y"</Description>
-          <LastState Value="360" RealAddress="0D599E08"/>
           <ShowAsSigned>0</ShowAsSigned>
           <VariableType>4 Bytes</VariableType>
           <Address>"lethalleague.exe"+001A9E54</Address>
@@ -402,7 +594,6 @@ dealloc(code)
         <CheatEntry>
           <ID>78</ID>
           <Description>"Render Width"</Description>
-          <LastState Value="1280" RealAddress="0D599DEC"/>
           <ShowAsSigned>0</ShowAsSigned>
           <VariableType>4 Bytes</VariableType>
           <Address>"lethalleague.exe"+001A9E54</Address>
@@ -419,7 +610,6 @@ dealloc(code)
         <CheatEntry>
           <ID>77</ID>
           <Description>"Render Height"</Description>
-          <LastState Value="720" RealAddress="0D599DF0"/>
           <ShowAsSigned>0</ShowAsSigned>
           <VariableType>4 Bytes</VariableType>
           <Address>"lethalleague.exe"+001A9E54</Address>
@@ -436,7 +626,6 @@ dealloc(code)
         <CheatEntry>
           <ID>84</ID>
           <Description>"Screen Rotate"</Description>
-          <LastState Value="0" RealAddress="0D599E78"/>
           <ShowAsSigned>0</ShowAsSigned>
           <VariableType>Double</VariableType>
           <Address>"lethalleague.exe"+001A9E54</Address>
@@ -453,7 +642,6 @@ dealloc(code)
         <CheatEntry>
           <ID>76</ID>
           <Description>"Breaks"</Description>
-          <LastState Value="53917424" RealAddress="0D599D14"/>
           <ShowAsSigned>0</ShowAsSigned>
           <VariableType>4 Bytes</VariableType>
           <Address>"lethalleague.exe"+001A9E54</Address>
@@ -470,7 +658,6 @@ dealloc(code)
         <CheatEntry>
           <ID>80</ID>
           <Description>"Breaks"</Description>
-          <LastState Value="1065353216" RealAddress="0D599E84"/>
           <ShowAsSigned>0</ShowAsSigned>
           <VariableType>4 Bytes</VariableType>
           <Address>"lethalleague.exe"+001A9E54</Address>
@@ -487,241 +674,10 @@ dealloc(code)
       </CheatEntries>
     </CheatEntry>
     <CheatEntry>
-      <ID>3819</ID>
-      <Description>"Player 1"</Description>
-      <Options moHideChildren="1"/>
-      <LastState Value="" Activated="1" RealAddress="1507B2A8"/>
-      <ShowAsSigned>0</ShowAsSigned>
-      <GroupHeader>1</GroupHeader>
-      <Address>[p1base]</Address>
-      <CheatEntries>
-        <CheatEntry>
-          <ID>90</ID>
-          <Description>"Player 1 Coords (+14)"</Description>
-          <Options moHideChildren="1"/>
-          <LastState Value="0" Activated="1" RealAddress="15071608"/>
-          <ShowAsSigned>0</ShowAsSigned>
-          <VariableType>4 Bytes</VariableType>
-          <Address>[p1coords]</Address>
-          <CheatEntries>
-            <CheatEntry>
-              <ID>91</ID>
-              <Description>"Player X Coord"</Description>
-              <LastState Value="54301620" RealAddress="15071620"/>
-              <ShowAsSigned>0</ShowAsSigned>
-              <VariableType>4 Bytes</VariableType>
-              <Address>p1coords</Address>
-              <Offsets>
-                <Offset>18</Offset>
-              </Offsets>
-            </CheatEntry>
-            <CheatEntry>
-              <ID>92</ID>
-              <Description>"Player Y Coord"</Description>
-              <LastState Value="30146560" RealAddress="15071624"/>
-              <ShowAsSigned>0</ShowAsSigned>
-              <VariableType>4 Bytes</VariableType>
-              <Address>p1coords</Address>
-              <Offsets>
-                <Offset>1C</Offset>
-              </Offsets>
-            </CheatEntry>
-          </CheatEntries>
-        </CheatEntry>
-        <CheatEntry>
-          <ID>99</ID>
-          <Description>"Player 1 State (+194)"</Description>
-          <Options moHideChildren="1"/>
-          <LastState Value="1975000" RealAddress="15076318"/>
-          <ShowAsSigned>0</ShowAsSigned>
-          <VariableType>4 Bytes</VariableType>
-          <Address>[p1state]</Address>
-          <CheatEntries>
-            <CheatEntry>
-              <ID>100</ID>
-              <Description>"Facing Direction"</Description>
-              <LastState Value="1" RealAddress="1507631C"/>
-              <ShowAsSigned>0</ShowAsSigned>
-              <VariableType>Byte</VariableType>
-              <Address>p1state</Address>
-              <Offsets>
-                <Offset>4</Offset>
-              </Offsets>
-            </CheatEntry>
-            <CheatEntry>
-              <ID>101</ID>
-              <Description>"X Velocity"</Description>
-              <LastState Value="0" RealAddress="15076328"/>
-              <ShowAsSigned>0</ShowAsSigned>
-              <VariableType>4 Bytes</VariableType>
-              <Address>p1state</Address>
-              <Offsets>
-                <Offset>10</Offset>
-              </Offsets>
-            </CheatEntry>
-            <CheatEntry>
-              <ID>102</ID>
-              <Description>"Y Velocity"</Description>
-              <LastState Value="0" RealAddress="1507632C"/>
-              <ShowAsSigned>0</ShowAsSigned>
-              <VariableType>4 Bytes</VariableType>
-              <Address>p1state</Address>
-              <Offsets>
-                <Offset>14</Offset>
-              </Offsets>
-            </CheatEntry>
-            <CheatEntry>
-              <ID>103</ID>
-              <Description>"Character Exists?"</Description>
-              <LastState Value="1" RealAddress="15076335"/>
-              <ShowAsSigned>0</ShowAsSigned>
-              <VariableType>Byte</VariableType>
-              <Address>p1state</Address>
-              <Offsets>
-                <Offset>1d</Offset>
-              </Offsets>
-            </CheatEntry>
-            <CheatEntry>
-              <ID>104</ID>
-              <Description>"Touching Ground"</Description>
-              <LastState Value="1" RealAddress="15076336"/>
-              <ShowAsSigned>0</ShowAsSigned>
-              <VariableType>Byte</VariableType>
-              <Address>p1state</Address>
-              <Offsets>
-                <Offset>1e</Offset>
-              </Offsets>
-            </CheatEntry>
-            <CheatEntry>
-              <ID>105</ID>
-              <Description>"Touching Right Wall"</Description>
-              <LastState Value="0" RealAddress="15076337"/>
-              <ShowAsSigned>0</ShowAsSigned>
-              <VariableType>Byte</VariableType>
-              <Address>p1state</Address>
-              <Offsets>
-                <Offset>1f</Offset>
-              </Offsets>
-            </CheatEntry>
-            <CheatEntry>
-              <ID>107</ID>
-              <Description>"Touching Left Wall"</Description>
-              <LastState Value="0" RealAddress="15076338"/>
-              <ShowAsSigned>0</ShowAsSigned>
-              <VariableType>Byte</VariableType>
-              <Address>p1state</Address>
-              <Offsets>
-                <Offset>20</Offset>
-              </Offsets>
-            </CheatEntry>
-            <CheatEntry>
-              <ID>106</ID>
-              <Description>"Touching Ceiling"</Description>
-              <LastState Value="0" RealAddress="15076339"/>
-              <ShowAsSigned>0</ShowAsSigned>
-              <VariableType>Byte</VariableType>
-              <Address>p1state</Address>
-              <Offsets>
-                <Offset>21</Offset>
-              </Offsets>
-            </CheatEntry>
-            <CheatEntry>
-              <ID>108</ID>
-              <Description>"Character State"</Description>
-              <LastState Value="0" RealAddress="1507644C"/>
-              <ShowAsSigned>0</ShowAsSigned>
-              <VariableType>4 Bytes</VariableType>
-              <Address>p1state</Address>
-              <Offsets>
-                <Offset>134</Offset>
-              </Offsets>
-            </CheatEntry>
-            <CheatEntry>
-              <ID>109</ID>
-              <Description>"Animation State"</Description>
-              <LastState Value="0" RealAddress="15076450"/>
-              <ShowAsSigned>0</ShowAsSigned>
-              <VariableType>4 Bytes</VariableType>
-              <Address>p1state</Address>
-              <Offsets>
-                <Offset>138</Offset>
-              </Offsets>
-            </CheatEntry>
-            <CheatEntry>
-              <ID>110</ID>
-              <Description>"Hitstun Countdown"</Description>
-              <LastState Value="0" RealAddress="15076454"/>
-              <ShowAsSigned>1</ShowAsSigned>
-              <VariableType>4 Bytes</VariableType>
-              <Address>p1state</Address>
-              <Offsets>
-                <Offset>13c</Offset>
-              </Offsets>
-            </CheatEntry>
-            <CheatEntry>
-              <ID>111</ID>
-              <Description>"Change Animation State Countdown"</Description>
-              <LastState Value="0" RealAddress="15076458"/>
-              <ShowAsSigned>1</ShowAsSigned>
-              <VariableType>4 Bytes</VariableType>
-              <Address>p1state</Address>
-              <Offsets>
-                <Offset>140</Offset>
-              </Offsets>
-            </CheatEntry>
-            <CheatEntry>
-              <ID>112</ID>
-              <Description>"Special Meter"</Description>
-              <LastState Value="0" RealAddress="15076468"/>
-              <ShowAsSigned>0</ShowAsSigned>
-              <VariableType>4 Bytes</VariableType>
-              <Address>p1state</Address>
-              <Offsets>
-                <Offset>150</Offset>
-              </Offsets>
-            </CheatEntry>
-            <CheatEntry>
-              <ID>113</ID>
-              <Description>"Charge?"</Description>
-              <LastState Value="0" RealAddress="1507646C"/>
-              <ShowAsSigned>0</ShowAsSigned>
-              <VariableType>4 Bytes</VariableType>
-              <Address>p1state</Address>
-              <Offsets>
-                <Offset>154</Offset>
-              </Offsets>
-            </CheatEntry>
-            <CheatEntry>
-              <ID>114</ID>
-              <Description>"?In Hitstun?"</Description>
-              <LastState Value="0" RealAddress="15076478"/>
-              <ShowAsSigned>0</ShowAsSigned>
-              <VariableType>Byte</VariableType>
-              <Address>p1state</Address>
-              <Offsets>
-                <Offset>160</Offset>
-              </Offsets>
-            </CheatEntry>
-            <CheatEntry>
-              <ID>115</ID>
-              <Description>"?Special Activated?"</Description>
-              <LastState Value="0" RealAddress="15076479"/>
-              <ShowAsSigned>0</ShowAsSigned>
-              <VariableType>Byte</VariableType>
-              <Address>p1state</Address>
-              <Offsets>
-                <Offset>161</Offset>
-              </Offsets>
-            </CheatEntry>
-          </CheatEntries>
-        </CheatEntry>
-      </CheatEntries>
-    </CheatEntry>
-    <CheatEntry>
       <ID>3821</ID>
       <Description>"Player 2"</Description>
-      <Options moHideChildren="1"/>
-      <LastState Value="" Activated="1" RealAddress="15085480"/>
+      <Options moManualExpandCollapse="1"/>
+      <LastState Value="" RealAddress="00000000"/>
       <ShowAsSigned>0</ShowAsSigned>
       <GroupHeader>1</GroupHeader>
       <Address>[p2base]</Address>
@@ -729,8 +685,7 @@ dealloc(code)
         <CheatEntry>
           <ID>3822</ID>
           <Description>"Player 2 Coords (+14)"</Description>
-          <Options moHideChildren="1"/>
-          <LastState Value="0" Activated="1" RealAddress="15072018"/>
+          <Options moManualExpandCollapse="1"/>
           <ShowAsSigned>0</ShowAsSigned>
           <VariableType>4 Bytes</VariableType>
           <Address>[p2coords]</Address>
@@ -738,7 +693,6 @@ dealloc(code)
             <CheatEntry>
               <ID>3823</ID>
               <Description>"Player X Coord"</Description>
-              <LastState Value="41668942" RealAddress="15072030"/>
               <ShowAsSigned>0</ShowAsSigned>
               <VariableType>4 Bytes</VariableType>
               <Address>p2coords</Address>
@@ -749,7 +703,6 @@ dealloc(code)
             <CheatEntry>
               <ID>3824</ID>
               <Description>"Player Y Coord"</Description>
-              <LastState Value="29884416" RealAddress="15072034"/>
               <ShowAsSigned>0</ShowAsSigned>
               <VariableType>4 Bytes</VariableType>
               <Address>p2coords</Address>
@@ -762,8 +715,7 @@ dealloc(code)
         <CheatEntry>
           <ID>3825</ID>
           <Description>"Player 2 State (+194)"</Description>
-          <Options moHideChildren="1"/>
-          <LastState Value="1975000" RealAddress="15085AD0"/>
+          <Options moManualExpandCollapse="1"/>
           <ShowAsSigned>0</ShowAsSigned>
           <VariableType>4 Bytes</VariableType>
           <Address>[p2state]</Address>
@@ -771,7 +723,6 @@ dealloc(code)
             <CheatEntry>
               <ID>3826</ID>
               <Description>"Facing Direction"</Description>
-              <LastState Value="1" RealAddress="1507631C"/>
               <ShowAsSigned>0</ShowAsSigned>
               <VariableType>Byte</VariableType>
               <Address>p1state</Address>
@@ -782,7 +733,6 @@ dealloc(code)
             <CheatEntry>
               <ID>3827</ID>
               <Description>"X Velocity"</Description>
-              <LastState Value="0" RealAddress="15076328"/>
               <ShowAsSigned>0</ShowAsSigned>
               <VariableType>4 Bytes</VariableType>
               <Address>p1state</Address>
@@ -793,7 +743,6 @@ dealloc(code)
             <CheatEntry>
               <ID>3828</ID>
               <Description>"Y Velocity"</Description>
-              <LastState Value="0" RealAddress="1507632C"/>
               <ShowAsSigned>0</ShowAsSigned>
               <VariableType>4 Bytes</VariableType>
               <Address>p1state</Address>
@@ -804,7 +753,6 @@ dealloc(code)
             <CheatEntry>
               <ID>3829</ID>
               <Description>"Character Exists?"</Description>
-              <LastState Value="1" RealAddress="15076335"/>
               <ShowAsSigned>0</ShowAsSigned>
               <VariableType>Byte</VariableType>
               <Address>p1state</Address>
@@ -815,7 +763,6 @@ dealloc(code)
             <CheatEntry>
               <ID>3830</ID>
               <Description>"Touching Ground"</Description>
-              <LastState Value="1" RealAddress="15076336"/>
               <ShowAsSigned>0</ShowAsSigned>
               <VariableType>Byte</VariableType>
               <Address>p1state</Address>
@@ -826,7 +773,6 @@ dealloc(code)
             <CheatEntry>
               <ID>3831</ID>
               <Description>"Touching Right Wall"</Description>
-              <LastState Value="0" RealAddress="15076337"/>
               <ShowAsSigned>0</ShowAsSigned>
               <VariableType>Byte</VariableType>
               <Address>p1state</Address>
@@ -837,7 +783,6 @@ dealloc(code)
             <CheatEntry>
               <ID>3832</ID>
               <Description>"Touching Left Wall"</Description>
-              <LastState Value="0" RealAddress="15076338"/>
               <ShowAsSigned>0</ShowAsSigned>
               <VariableType>Byte</VariableType>
               <Address>p1state</Address>
@@ -848,7 +793,6 @@ dealloc(code)
             <CheatEntry>
               <ID>3833</ID>
               <Description>"Touching Ceiling"</Description>
-              <LastState Value="0" RealAddress="15076339"/>
               <ShowAsSigned>0</ShowAsSigned>
               <VariableType>Byte</VariableType>
               <Address>p1state</Address>
@@ -859,7 +803,6 @@ dealloc(code)
             <CheatEntry>
               <ID>3834</ID>
               <Description>"Character State"</Description>
-              <LastState Value="0" RealAddress="1507644C"/>
               <ShowAsSigned>0</ShowAsSigned>
               <VariableType>4 Bytes</VariableType>
               <Address>p1state</Address>
@@ -870,7 +813,6 @@ dealloc(code)
             <CheatEntry>
               <ID>3835</ID>
               <Description>"Animation State"</Description>
-              <LastState Value="0" RealAddress="15076450"/>
               <ShowAsSigned>0</ShowAsSigned>
               <VariableType>4 Bytes</VariableType>
               <Address>p1state</Address>
@@ -881,7 +823,6 @@ dealloc(code)
             <CheatEntry>
               <ID>3836</ID>
               <Description>"Hitstun Countdown"</Description>
-              <LastState Value="0" RealAddress="15076454"/>
               <ShowAsSigned>1</ShowAsSigned>
               <VariableType>4 Bytes</VariableType>
               <Address>p1state</Address>
@@ -892,7 +833,6 @@ dealloc(code)
             <CheatEntry>
               <ID>3837</ID>
               <Description>"Change Animation State Countdown"</Description>
-              <LastState Value="0" RealAddress="15076458"/>
               <ShowAsSigned>1</ShowAsSigned>
               <VariableType>4 Bytes</VariableType>
               <Address>p1state</Address>
@@ -903,7 +843,6 @@ dealloc(code)
             <CheatEntry>
               <ID>3838</ID>
               <Description>"Special Meter"</Description>
-              <LastState Value="0" RealAddress="15076468"/>
               <ShowAsSigned>0</ShowAsSigned>
               <VariableType>4 Bytes</VariableType>
               <Address>p1state</Address>
@@ -914,7 +853,6 @@ dealloc(code)
             <CheatEntry>
               <ID>3839</ID>
               <Description>"Charge?"</Description>
-              <LastState Value="0" RealAddress="1507646C"/>
               <ShowAsSigned>0</ShowAsSigned>
               <VariableType>4 Bytes</VariableType>
               <Address>p1state</Address>
@@ -925,7 +863,6 @@ dealloc(code)
             <CheatEntry>
               <ID>3840</ID>
               <Description>"?In Hitstun?"</Description>
-              <LastState Value="0" RealAddress="15076478"/>
               <ShowAsSigned>0</ShowAsSigned>
               <VariableType>Byte</VariableType>
               <Address>p1state</Address>
@@ -936,7 +873,6 @@ dealloc(code)
             <CheatEntry>
               <ID>3841</ID>
               <Description>"?Special Activated?"</Description>
-              <LastState Value="0" RealAddress="15076479"/>
               <ShowAsSigned>0</ShowAsSigned>
               <VariableType>Byte</VariableType>
               <Address>p1state</Address>
@@ -948,71 +884,401 @@ dealloc(code)
         </CheatEntry>
       </CheatEntries>
     </CheatEntry>
+    <CheatEntry>
+      <ID>3842</ID>
+      <Description>"IsKeyPressed hook"</Description>
+      <LastState/>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>/*
+0 = up
+1 = right
+2 = down
+3 = left
+4 = hit
+5 = bunt
+6 = jump
+7 = ?
+8 = taunt
+
+player is stored in ESI
+*/
+[ENABLE]
+
+alloc(newmem,2048)
+label(returnhere)
+label(originalcode)
+label(exit)
+
+globalalloc(input_check, 4)
+alloc(temp, 4)
+
+newmem: //this is allocated memory, you have read,write,execute access
+//place your code here
+cmp [esp], 6
+je key_force
+jmp originalcode
+
+key_force:
+mov eax, 1
+
+originalcode:
+test al,al
+je lethalleague.exe+C14D0
+
+exit:
+jmp returnhere
+
+"lethalleague.exe"+C13AE:
+jmp newmem
+nop 3
+returnhere:
+
+[DISABLE]
+"lethalleague.exe"+C13AE:
+test al,al
+je lethalleague.exe+C14D0
+
+dealloc(code)
+unregistersymbol(input_check)
+
+</AssemblerScript>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>3848</ID>
+      <Description>"No description"</Description>
+      <ShowAsHex>1</ShowAsHex>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>4 Bytes</VariableType>
+      <Address>006FF83C+4</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>3849</ID>
+      <Description>"input event handler"</Description>
+      <LastState/>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>{
+value is in esp + 4
+0 = taunt
+17 = bunt
+19 = hit
+39 = jump
+47 = left
+48 = right
+49 = up
+4A = down
+}
+
+[ENABLE]
+
+alloc(newmem,2048)
+label(returnhere)
+label(originalcode)
+label(exit)
+
+//change value in esp + 4
+
+newmem: //this is allocated memory, you have read,write,execute access
+//place your code here
+cmp [esp+4], 39
+je originalcode
+
+disallow:
+ret 8
+
+originalcode:
+push ebp
+mov ebp,esp
+lea eax,[ebp+08]
+
+exit:
+jmp returnhere
+
+"lethalleague.exe"+C0E80:
+jmp newmem
+nop
+returnhere:
+
+[DISABLE]
+
+"lethalleague.exe"+C0E80:
+push ebp
+mov ebp,esp
+lea eax,[ebp+08]
+
+dealloc(newmem)
+
+</AssemblerScript>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>3850</ID>
+      <Description>"No description"</Description>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>4 Bytes</VariableType>
+      <Address>03BCB4B8+105</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>3856</ID>
+      <Description>"HookInputEventValues"</Description>
+      <LastState/>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>[ENABLE]
+
+alloc(newmem,2048)
+label(returnhere)
+label(originalcode)
+label(exit)
+
+globalalloc(event_object, 4)
+globalalloc(event_this, 4)
+
+newmem: //this is allocated memory, you have read,write,execute access
+//place your code here
+push eax
+mov eax, [ebp-9C]
+mov [event_object], eax
+mov eax, [esi+A8]
+mov [event_this], eax
+pop eax
+
+originalcode:
+movzx ecx,byte ptr [eax+lethalleague.exe+BAC78]
+
+exit:
+jmp returnhere
+
+"lethalleague.exe"+BA9AD:
+jmp newmem
+nop 2
+returnhere:
+
+[DISABLE]
+
+"lethalleague.exe"+BA9AD:
+movzx ecx,byte ptr [eax+lethalleague.exe+BAC78]
+
+dealloc(newmem)
+unregistersymbol(event_object)
+unregistersymbol(event_this)
+</AssemblerScript>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>3851</ID>
+      <Description>"CallInputEvent"</Description>
+      <LastState/>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>[ENABLE]
+
+alloc(thread, 2048)
+createthread(thread)
+
+thread:
+mov eax, 19
+mov edx, [event_object]
+mov ecx, [event_this]
+push edx
+push eax
+call lethalleague.exe+C0E80
+ret
+
+[DISABLE]
+</AssemblerScript>
+      <Hotkeys>
+        <Hotkey>
+          <Action>Toggle Activation</Action>
+          <Keys>
+            <Key>105</Key>
+          </Keys>
+          <ID>0</ID>
+        </Hotkey>
+      </Hotkeys>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>3861</ID>
+      <Description>"Hook Index Playernums"</Description>
+      <LastState/>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>{
+Index is in edx (sometimes), objects are in esi
+}
+[ENABLE]
+
+alloc(newmem,2048)
+label(returnhere)
+label(originalcode)
+label(exit)
+
+newmem: //this is allocated memory, you have read,write,execute access
+//place your code here
+
+originalcode:
+push esi
+mov ecx,ebx
+mov [ebp-18],edi
+
+exit:
+jmp returnhere
+
+"lethalleague.exe"+C1A7E:
+jmp newmem
+nop
+returnhere:
+
+[DISABLE]
+
+dealloc(newmem)
+
+"lethalleague.exe"+C1A7E:
+push esi
+mov ecx,ebx
+mov [ebp-18],edi
+</AssemblerScript>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>3862</ID>
+      <Description>"EndEventLoop"</Description>
+      <LastState/>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>[ENABLE]
+
+alloc(newmem,2048)
+label(returnhere)
+label(originalcode)
+label(exit)
+
+newmem: //this is allocated memory, you have read,write,execute access
+//place your code here
+
+originalcode:
+test al,al
+je lethalleague.exe+BAC35
+
+exit:
+jmp returnhere
+
+"lethalleague.exe"+BA97C:
+jmp newmem
+nop 3
+returnhere:
+
+[DISABLE]
+
+"lethalleague.exe"+BA97C:
+test al,al
+je lethalleague.exe+BAC35
+
+dealloc(newmem)
+</AssemblerScript>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>3847</ID>
+      <Description>"call to input event checker"</Description>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>4 Bytes</VariableType>
+      <Address>lethalleague.exe+BAAD8 </Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>3843</ID>
+      <Description>"key_check"</Description>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>4 Bytes</VariableType>
+      <Address>input_check</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>3863</ID>
+      <Description>"peekmessage_inject"</Description>
+      <LastState/>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>[ENABLE]
+
+alloc(newmem,2048)
+label(returnhere)
+label(originalcode)
+label(exit)
+
+globalalloc(peekmessage_test, 4)
+
+newmem: //this is allocated memory, you have read,write,execute access
+//place your code here
+mov [peekmessage_test], ebp
+
+originalcode:
+push [ebp+18]
+mov byte ptr [gameoverlayrenderer.dll+14965C],01
+
+exit:
+jmp returnhere
+
+"gameoverlayrenderer.dll"+8543A:
+jmp newmem
+nop 5
+returnhere:
+
+[DISABLE]
+
+"gameoverlayrenderer.dll"+8543A:
+push [ebp+18]
+mov byte ptr [gameoverlayrenderer.dll+14965C],01
+
+unregistersymbol(peekmessage_test)
+dealloc(newmem)
+</AssemblerScript>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>3864</ID>
+      <Description>"ebp+18"</Description>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>4 Bytes</VariableType>
+      <Address>peekmessage_test+18</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>3868</ID>
+      <Description>"ebp+14"</Description>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>4 Bytes</VariableType>
+      <Address>peekmessage_test+14</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>3865</ID>
+      <Description>"ebp+10"</Description>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>4 Bytes</VariableType>
+      <Address>peekmessage_test+10</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>3866</ID>
+      <Description>"ebp+0c"</Description>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>4 Bytes</VariableType>
+      <Address>peekmessage_test+0c</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>3867</ID>
+      <Description>"ebp+08"</Description>
+      <ShowAsSigned>0</ShowAsSigned>
+      <VariableType>4 Bytes</VariableType>
+      <Address>peekmessage_test+08</Address>
+    </CheatEntry>
   </CheatEntries>
   <UserdefinedSymbols>
     <SymbolEntry>
-      <Name>p1base</Name>
-      <Address>0CF80000</Address>
+      <Name>input_state</Name>
+      <Address>0EC80000</Address>
     </SymbolEntry>
     <SymbolEntry>
-      <Name>p2base</Name>
-      <Address>0CF80010</Address>
+      <Name>event_object</Name>
+      <Address>08020020</Address>
     </SymbolEntry>
     <SymbolEntry>
-      <Name>p3base</Name>
-      <Address>0CF80020</Address>
+      <Name>event_this</Name>
+      <Address>08020030</Address>
     </SymbolEntry>
     <SymbolEntry>
-      <Name>p4base</Name>
-      <Address>0CF80030</Address>
+      <Name>input_check</Name>
+      <Address>091A0020</Address>
     </SymbolEntry>
     <SymbolEntry>
-      <Name>p1coords</Name>
-      <Address>0CF80040</Address>
-    </SymbolEntry>
-    <SymbolEntry>
-      <Name>p2coords</Name>
-      <Address>0CF80050</Address>
-    </SymbolEntry>
-    <SymbolEntry>
-      <Name>p3coords</Name>
-      <Address>0CF80060</Address>
-    </SymbolEntry>
-    <SymbolEntry>
-      <Name>p4coords</Name>
-      <Address>0CF80070</Address>
-    </SymbolEntry>
-    <SymbolEntry>
-      <Name>p1state</Name>
-      <Address>0CF80080</Address>
-    </SymbolEntry>
-    <SymbolEntry>
-      <Name>p2state</Name>
-      <Address>0CF80090</Address>
-    </SymbolEntry>
-    <SymbolEntry>
-      <Name>p3state</Name>
-      <Address>0CF800A0</Address>
-    </SymbolEntry>
-    <SymbolEntry>
-      <Name>p4state</Name>
-      <Address>0CF800B0</Address>
-    </SymbolEntry>
-    <SymbolEntry>
-      <Name>currentplayer</Name>
-      <Address>0CF800C0</Address>
-    </SymbolEntry>
-    <SymbolEntry>
-      <Name>ballbase</Name>
-      <Address>0CF800D0</Address>
-    </SymbolEntry>
-    <SymbolEntry>
-      <Name>ballcoords</Name>
-      <Address>0CF800E0</Address>
-    </SymbolEntry>
-    <SymbolEntry>
-      <Name>ballstate</Name>
-      <Address>0CF800F0</Address>
+      <Name>peekmessage_test</Name>
+      <Address>01760000</Address>
     </SymbolEntry>
   </UserdefinedSymbols>
   <Structures StructVersion="2">

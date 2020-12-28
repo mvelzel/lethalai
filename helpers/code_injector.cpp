@@ -3,8 +3,11 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <io.h>
+#include <iostream>
 
 namespace helpers {
+    float game_speed;
+
 	void CodeInjector::WriteBytesASM(DWORD dest_address,
 			LPVOID patch,
 			DWORD num_bytes) {
@@ -102,4 +105,37 @@ namespace helpers {
 		// Make the patch now
 		WriteBytesASM(dest_address + 5, nop_patch, nop_count); 
 	}
+
+    void CodeInjector::SpeedHack(float speed) {
+        LPVOID initialize_speedhack = (LPVOID)GetProcAddress(
+                GetModuleHandleA("speedhack-i386.dll"),
+                "InitializeSpeedhack"); 
+        if (initialize_speedhack != 0) {
+            std::cout << "Found InitializeSpeedhack at: " << initialize_speedhack << std::endl;
+            game_speed = speed;
+            HANDLE current_process = GetCurrentProcess();
+
+            union f2u {
+                float f;
+                uint32_t u;
+            };
+            f2u f = {game_speed};
+            HANDLE thread = CreateRemoteThread(
+                    GetCurrentProcess(), NULL, NULL, 
+                    (LPTHREAD_START_ROUTINE) initialize_speedhack,
+                    (LPVOID)f.u, NULL, NULL);
+
+
+            if (thread) {
+                std::cout << "Called remote thread: " << thread << std::endl;
+                CloseHandle(thread);
+            } else {
+                std::cout << "Creating remote thread failed." << std::endl;
+            }
+        } else {
+
+            std::cout << "Cannot load speedhack, speedhack-i386.dll not found." << std::endl;
+        }
+    }
 }
+

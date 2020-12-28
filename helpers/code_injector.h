@@ -13,6 +13,7 @@ namespace helpers {
             static void CodeCave(DWORD dest_address,
                     VOID (*func)(VOID),
                     BYTE nop_count);
+            static void SpeedHack(float speed);
     };
 }
 
