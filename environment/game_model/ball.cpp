@@ -1,4 +1,6 @@
 #include "ball.h"
+#include "../game_state.h"
+#include "../../helpers/math_helpers.h"
 
 namespace environment {
     Ball::Ball() {
@@ -11,53 +13,81 @@ namespace environment {
         this->hitstun_countdown = 0;
     }
 
-    unsigned int Ball::GetXCoord() {
+    int Ball::GetXCoord() {
         return this->x_coord;
     }
-    void Ball::SetXCoord(unsigned int x_coord) {
+    void Ball::SetXCoord(int x_coord) {
         this->x_coord = x_coord;
     }
 
-    unsigned int Ball::GetYCoord() {
+    int Ball::GetYCoord() {
         return this->y_coord;
     }
-    void Ball::SetYCoord(unsigned int y_coord) {
+    void Ball::SetYCoord(int y_coord) {
         this->y_coord = y_coord;
     }
 
-    unsigned int Ball::GetXVelocity() {
+    int Ball::GetXVelocity() {
         return this->x_velocity;
     }
-    void Ball::SetXVelocity(unsigned int x_velocity) {
+    void Ball::SetXVelocity(int x_velocity) {
         this->x_velocity = x_velocity;
     }
 
-    unsigned int Ball::GetYVelocity() {
+    int Ball::GetYVelocity() {
         return this->y_velocity;
     }
-    void Ball::SetYVelocity(unsigned int y_velocity) {
+    void Ball::SetYVelocity(int y_velocity) {
         this->y_velocity = y_velocity;
     }
 
-    unsigned int Ball::GetBallSpeed() {
+    int Ball::GetBallSpeed() {
         return this->ball_speed;
     }
-    void Ball::SetBallSpeed(unsigned int ball_speed) {
+    void Ball::SetBallSpeed(int ball_speed) {
         this->ball_speed = ball_speed;
     }
 
-    unsigned int Ball::GetBallTag() {
+    int Ball::GetBallTag() {
         return this->ball_tag;
     }
-    void Ball::SetBallTag(unsigned int ball_tag) {
+    void Ball::SetBallTag(int ball_tag) {
         this->ball_tag = ball_tag;
     }
 
-    signed int Ball::GetHitstunCountdown() {
+    int Ball::GetHitstunCountdown() {
         return this->hitstun_countdown;
     }
-    void Ball::SetHitstunCountdown(signed int hitstun_countdown) {
+    void Ball::SetHitstunCountdown(int hitstun_countdown) {
         this->hitstun_countdown = hitstun_countdown;
+    }
+
+    std::vector<float> Ball::NormalizeFloats(int player_count) {
+        std::vector<float> result;
+
+        result.push_back(helpers::Math::Normalize(
+                    this->x_coord, GameState::kMinX, GameState::kMaxX));
+        result.push_back(helpers::Math::Normalize(
+                    this->y_coord, GameState::kMinY, GameState::kMaxY));
+        result.push_back(helpers::Math::Normalize(
+                    this->x_velocity, Ball::kMinVelocity, Ball::kMaxVelocity));
+        result.push_back(helpers::Math::Normalize(
+                    this->y_velocity, Ball::kMinVelocity, Ball::kMaxVelocity));
+        result.push_back(helpers::Math::Normalize(
+                    this->ball_speed, 0.0f, Ball::kMaxBallSpeed));
+        // TODO fix this for primary/secondary players
+        for (int i = 0; i < player_count; i++) {
+            if (i == this->ball_tag)
+                result.push_back(1.0f);
+            else
+                result.push_back(0.0f);
+        }
+        result.push_back(helpers::Math::Normalize(
+                    this->hitstun_countdown,
+                    Ball::kMinHitstunCountdown, Ball::kMaxHitstunCountdown));
+        
+
+        return result;
     }
 
     std::ostream& operator<<(std::ostream& output, const Ball& ball) {

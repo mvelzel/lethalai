@@ -1,41 +1,60 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include<ostream>
+#include <ostream>
+#include <Windows.h>
+#include <vector>
 
 namespace environment {
     class Player {
         private:
-            unsigned int x_coord;
-            unsigned int y_coord;
+            int x_coord;
+            int y_coord;
             bool facing_direction;
-            unsigned int x_velocity;
-            unsigned int y_velocity;
-            unsigned int character_state;
-            unsigned int animation_state;
-            signed int hitstun_countdown;
-            unsigned int special_meter;
+            int x_velocity;
+            int y_velocity;
+            int character_state;
+            int animation_state;
+            int hitstun_countdown;
+            int special_meter;
+            int stocks;
+            DWORD player_base;
         public:
             Player();
 
-            unsigned int GetXCoord();
-            void SetXCoord(unsigned int x_coord);
-            unsigned int GetYCoord();
-            void SetYCoord(unsigned int y_coord);
+            static const int kAnimationStateCount = 42;
+            static const int kCharacterStateCount = 20;
+
+            static const int kMaxVelocity = 10000000;
+            static const int kMinVelocity = -10000000;
+            
+            static const int kMaxSpecialMeter = 4;
+            static const int kMaxStocks = 8;
+
+            int GetXCoord();
+            void SetXCoord(signed int x_coord);
+            int GetYCoord();
+            void SetYCoord(signed int y_coord);
             bool GetFacingDirection();
             void SetFacingDirection(bool facing_direction);
-            unsigned int GetXVelocity();
-            void SetXVelocity(unsigned int x_velocity);
-            unsigned int GetYVelocity();
-            void SetYVelocity (unsigned int y_velocity);
-            unsigned int GetCharacterState();
-            void SetCharacterState(unsigned int character_state);
-            unsigned int GetAnimationState();
-            void SetAnimationState(unsigned int animation_state);
-            signed int GetHitstunCountdown();
-            void SetHitstunCountdown(signed int hitstun_countdown);
-            unsigned int GetSpecialMeter();
-            void SetSpecialMeter(unsigned int special_meter);
+            int GetXVelocity();
+            void SetXVelocity(int x_velocity);
+            int GetYVelocity();
+            void SetYVelocity (int y_velocity);
+            int GetCharacterState();
+            void SetCharacterState(int character_state);
+            int GetAnimationState();
+            void SetAnimationState(int animation_state);
+            int GetHitstunCountdown();
+            void SetHitstunCountdown(int hitstun_countdown);
+            int GetSpecialMeter();
+            void SetSpecialMeter(int special_meter);
+            DWORD GetPlayerBase();
+            void SetPlayerBase(DWORD player_base);
+            int GetStocks();
+            void SetStocks(int stocks);
+
+            std::vector<float> NormalizeFloats();
 
             friend std::ostream& operator<<(std::ostream& output, const Player& player);
     };

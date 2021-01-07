@@ -2,6 +2,7 @@
 #define INPUT_HANDLER_H
 
 #include "game_model/player.h"
+#include <vector>
 
 namespace environment {
     enum InputAction {
@@ -17,10 +18,10 @@ namespace environment {
 
     class InputHandler {
         private:
-            bool override_p1;
-            bool override_p2;
-            bool override_p3;
-            bool override_p4;
+            bool override_p1 = false;
+            bool override_p2 = false;
+            bool override_p3 = false;
+            bool override_p4 = false;
         public:
             InputHandler(bool enabled);
 
@@ -32,7 +33,7 @@ namespace environment {
             void EnableOverride(int player_number);
             void DisableOverride(int player_number);
 
-            void InputActions(int player_number, InputAction *actions, int action_count);
+            void InputActions(int player_number, std::vector<InputAction> actions);
     };
 }
 

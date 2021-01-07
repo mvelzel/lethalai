@@ -1,4 +1,5 @@
 #include "input_handler.h"
+
 #include "../helpers/code_injector.h"
 #include <iostream>
 #include <Windows.h>
@@ -34,7 +35,7 @@ namespace environment {
     }
 
     DWORD key_pressed_return = 0;
-    DWORD key_pressed_jmp = 0x00FB14D0;
+    DWORD key_pressed_jmp = 0x0;
 
     int actions_pressed_p1[8] = { 9, 9, 9, 9, 9, 9, 9, 9 };
     int actions_pressed_p2[8] = { 9, 9, 9, 9, 9, 9, 9, 9 };
@@ -112,11 +113,11 @@ namespace environment {
     
 
     DWORD input_event_return = 0;
-    DWORD input_event_call = 0x00FB0E80;
+    DWORD input_event_call = 0x0;
 
     DWORD input_event_value = 0x4B;
-    DWORD input_event_object = 0x02E6B4C8;
-    DWORD input_event_this = 0x128DEEE0;
+    DWORD input_event_object = 0x0;
+    DWORD input_event_this = 0x0;
 
     DWORD skip_override = 0;
 
@@ -145,10 +146,12 @@ namespace environment {
     }
 
     DWORD input_event_values_return = 0;
+    DWORD input_event_values_movzx = 0x0;
 
     void __declspec(naked) InputEventValues() {
         __asm {
             pop input_event_values_return
+            push ebx
             push eax
 
             mov eax, [ebp-0x9C]
@@ -157,8 +160,11 @@ namespace environment {
             mov input_event_this, eax
 
             pop eax
-            movzx ecx,byte ptr [eax+0x00FAAC78]
 
+            mov ebx, [input_event_values_movzx]
+            movzx ecx,byte ptr [eax+ebx]
+
+            pop ebx
             push input_event_values_return
             ret
         }
@@ -196,7 +202,7 @@ namespace environment {
     }
 
     DWORD end_event_loop_return = 0;
-    DWORD end_event_loop_jmp = 0x00FAAC35;
+    DWORD end_event_loop_jmp = 0x0;
 
     void PrintEndEventLoop() {
         printf("Event Loop End\n");
@@ -209,8 +215,6 @@ namespace environment {
             pushad
             pushfd
         }
-
-        PrintEndEventLoop();
 
         __asm {
             popfd
@@ -283,6 +287,11 @@ namespace environment {
     void InputHandler::Inject() {
         DWORD base_address = (DWORD)GetModuleHandleA("lethalleague.exe");
 
+        key_pressed_jmp = base_address + 0xC14D0;
+        input_event_call = base_address + 0xC0E80;
+        input_event_values_movzx = base_address + 0xBAC78;
+        end_event_loop_jmp = base_address + 0xBAC35;
+
         DWORD key_pressed_inject_address = base_address + 0xC13AE;
         helpers::CodeInjector::CodeCave(key_pressed_inject_address, KeyPressedInject, 3);
 
@@ -299,7 +308,7 @@ namespace environment {
         //helpers::CodeInjector::CodeCave(end_event_loop_address, EndEventLoop, 3);
     }
 
-    void InputHandler::InputActions(int player_number, InputAction *actions, int action_count) {
+    void InputHandler::InputActions(int player_number, std::vector<InputAction> actions) {
         if (input_event_values_return == 0 || player_objects_hook_return == 0)
             return;
         switch (player_number) {
@@ -320,21 +329,22 @@ namespace environment {
                 default: return;
             }
             
-        for (int i = 0; i < action_count; i++) {
-            int key_press = InputHandler::ActionToKeyPress(actions[i]);
+        for (InputAction & action : actions) {
+            int key_press = InputHandler::ActionToKeyPress(action);
             switch (player_number) {
-                case 1: actions_pressed_p1[actions[i]] = key_press; break;
-                case 2: actions_pressed_p2[actions[i]] = key_press; break;
-                case 3: actions_pressed_p3[actions[i]] = key_press; break;
-                case 4: actions_pressed_p4[actions[i]] = key_press; break;
+                case 1: actions_pressed_p1[action] = key_press; break;
+                case 2: actions_pressed_p2[action] = key_press; break;
+                case 3: actions_pressed_p3[action] = key_press; break;
+                case 4: actions_pressed_p4[action] = key_press; break;
                 default: return;
             }
 
-            int *input_event = new int(InputHandler::ActionToEvent(player_number, actions[i]));
+            int *input_event = new int(InputHandler::ActionToEvent(player_number, action));
             //CreateRemoteThread(GetCurrentProcess(), NULL, 0,
             //        (LPTHREAD_START_ROUTINE) InputEvent,
             //        input_event, NULL, NULL);
             InputEvent(input_event);
+            delete input_event;
         }
 
     }

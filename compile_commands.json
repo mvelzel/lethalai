@@ -1,32 +1,77 @@
 [
 {
   "directory": "C:/Users/mvelz/Documents/LethalAI/build",
-  "command": "C:\\PROGRA~2\\MICROS~1\\2019\\COMMUN~1\\VC\\Tools\\MSVC\\1426~1.288\\bin\\Hostx86\\x86\\cl.exe  /nologo /TP -DLethalAI_EXPORTS  /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /FoCMakeFiles\\LethalAI.dir\\lethalai.cpp.obj /FdCMakeFiles\\LethalAI.dir\\ /FS -c C:\\Users\\mvelz\\Documents\\LethalAI\\lethalai.cpp",
+  "command": "C:\\PROGRA~2\\MICROS~1\\2019\\COMMUN~1\\VC\\Tools\\MSVC\\1426~1.288\\bin\\Hostx86\\x86\\cl.exe  /nologo /TP -DLethalAI_EXPORTS -ID:\\pytorch\\torch\\include -ID:\\pytorch\\torch\\include\\torch\\csrc\\api\\include /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MD /O2 /Ob2 /DNDEBUG /EHsc /DNOMINMAX /wd4267 /wd4251 /wd4522 /wd4838 /wd4305 /wd4244 /wd4190 /wd4101 /wd4996 /wd4275 /bigobj /FoCMakeFiles\\LethalAI.dir\\lethalai.cpp.obj /FdCMakeFiles\\LethalAI.dir\\ /FS -c C:\\Users\\mvelz\\Documents\\LethalAI\\lethalai.cpp",
   "file": "C:/Users/mvelz/Documents/LethalAI/lethalai.cpp"
 },
 {
   "directory": "C:/Users/mvelz/Documents/LethalAI/build/helpers",
-  "command": "C:\\PROGRA~2\\MICROS~1\\2019\\COMMUN~1\\VC\\Tools\\MSVC\\1426~1.288\\bin\\Hostx86\\x86\\cl.exe  /nologo /TP   /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /FoCMakeFiles\\Logger.dir\\logger.cpp.obj /FdCMakeFiles\\Logger.dir\\Logger.pdb /FS -c C:\\Users\\mvelz\\Documents\\LethalAI\\helpers\\logger.cpp",
-  "file": "C:/Users/mvelz/Documents/LethalAI/helpers/logger.cpp"
-},
-{
-  "directory": "C:/Users/mvelz/Documents/LethalAI/build/helpers",
-  "command": "C:\\PROGRA~2\\MICROS~1\\2019\\COMMUN~1\\VC\\Tools\\MSVC\\1426~1.288\\bin\\Hostx86\\x86\\cl.exe  /nologo /TP   /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /FoCMakeFiles\\CodeInjector.dir\\code_injector.cpp.obj /FdCMakeFiles\\CodeInjector.dir\\CodeInjector.pdb /FS -c C:\\Users\\mvelz\\Documents\\LethalAI\\helpers\\code_injector.cpp",
+  "command": "C:\\PROGRA~2\\MICROS~1\\2019\\COMMUN~1\\VC\\Tools\\MSVC\\1426~1.288\\bin\\Hostx86\\x86\\cl.exe  /nologo /TP   /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MD /O2 /Ob2 /DNDEBUG /FoCMakeFiles\\CodeInjector.dir\\code_injector.cpp.obj /FdCMakeFiles\\CodeInjector.dir\\CodeInjector.pdb /FS -c C:\\Users\\mvelz\\Documents\\LethalAI\\helpers\\code_injector.cpp",
   "file": "C:/Users/mvelz/Documents/LethalAI/helpers/code_injector.cpp"
 },
 {
+  "directory": "C:/Users/mvelz/Documents/LethalAI/build/helpers",
+  "command": "C:\\PROGRA~2\\MICROS~1\\2019\\COMMUN~1\\VC\\Tools\\MSVC\\1426~1.288\\bin\\Hostx86\\x86\\cl.exe  /nologo /TP   /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MD /O2 /Ob2 /DNDEBUG /FoCMakeFiles\\Logger.dir\\logger.cpp.obj /FdCMakeFiles\\Logger.dir\\Logger.pdb /FS -c C:\\Users\\mvelz\\Documents\\LethalAI\\helpers\\logger.cpp",
+  "file": "C:/Users/mvelz/Documents/LethalAI/helpers/logger.cpp"
+},
+{
   "directory": "C:/Users/mvelz/Documents/LethalAI/build/environment",
-  "command": "C:\\PROGRA~2\\MICROS~1\\2019\\COMMUN~1\\VC\\Tools\\MSVC\\1426~1.288\\bin\\Hostx86\\x86\\cl.exe  /nologo /TP   /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /FoCMakeFiles\\GameState.dir\\game_state.cpp.obj /FdCMakeFiles\\GameState.dir\\GameState.pdb /FS -c C:\\Users\\mvelz\\Documents\\LethalAI\\environment\\game_state.cpp",
+  "command": "C:\\PROGRA~2\\MICROS~1\\2019\\COMMUN~1\\VC\\Tools\\MSVC\\1426~1.288\\bin\\Hostx86\\x86\\cl.exe  /nologo /TP   /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MD /O2 /Ob2 /DNDEBUG /FoCMakeFiles\\GameState.dir\\game_state.cpp.obj /FdCMakeFiles\\GameState.dir\\GameState.pdb /FS -c C:\\Users\\mvelz\\Documents\\LethalAI\\environment\\game_state.cpp",
   "file": "C:/Users/mvelz/Documents/LethalAI/environment/game_state.cpp"
 },
 {
   "directory": "C:/Users/mvelz/Documents/LethalAI/build/environment",
-  "command": "C:\\PROGRA~2\\MICROS~1\\2019\\COMMUN~1\\VC\\Tools\\MSVC\\1426~1.288\\bin\\Hostx86\\x86\\cl.exe  /nologo /TP   /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /FoCMakeFiles\\StateObserver.dir\\state_observer.cpp.obj /FdCMakeFiles\\StateObserver.dir\\StateObserver.pdb /FS -c C:\\Users\\mvelz\\Documents\\LethalAI\\environment\\state_observer.cpp",
+  "command": "C:\\PROGRA~2\\MICROS~1\\2019\\COMMUN~1\\VC\\Tools\\MSVC\\1426~1.288\\bin\\Hostx86\\x86\\cl.exe  /nologo /TP   /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MD /O2 /Ob2 /DNDEBUG /FoCMakeFiles\\StateObserver.dir\\state_observer.cpp.obj /FdCMakeFiles\\StateObserver.dir\\StateObserver.pdb /FS -c C:\\Users\\mvelz\\Documents\\LethalAI\\environment\\state_observer.cpp",
   "file": "C:/Users/mvelz/Documents/LethalAI/environment/state_observer.cpp"
 },
 {
+  "directory": "C:/Users/mvelz/Documents/LethalAI/build/environment",
+  "command": "C:\\PROGRA~2\\MICROS~1\\2019\\COMMUN~1\\VC\\Tools\\MSVC\\1426~1.288\\bin\\Hostx86\\x86\\cl.exe  /nologo /TP   /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MD /O2 /Ob2 /DNDEBUG /FoCMakeFiles\\InputHandler.dir\\input_handler.cpp.obj /FdCMakeFiles\\InputHandler.dir\\InputHandler.pdb /FS -c C:\\Users\\mvelz\\Documents\\LethalAI\\environment\\input_handler.cpp",
+  "file": "C:/Users/mvelz/Documents/LethalAI/environment/input_handler.cpp"
+},
+{
+  "directory": "C:/Users/mvelz/Documents/LethalAI/build/environment",
+  "command": "C:\\PROGRA~2\\MICROS~1\\2019\\COMMUN~1\\VC\\Tools\\MSVC\\1426~1.288\\bin\\Hostx86\\x86\\cl.exe  /nologo /TP   /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MD /O2 /Ob2 /DNDEBUG /FoCMakeFiles\\EventObserver.dir\\event_observer.cpp.obj /FdCMakeFiles\\EventObserver.dir\\EventObserver.pdb /FS -c C:\\Users\\mvelz\\Documents\\LethalAI\\environment\\event_observer.cpp",
+  "file": "C:/Users/mvelz/Documents/LethalAI/environment/event_observer.cpp"
+},
+{
   "directory": "C:/Users/mvelz/Documents/LethalAI/build/environment/game_model",
-  "command": "C:\\PROGRA~2\\MICROS~1\\2019\\COMMUN~1\\VC\\Tools\\MSVC\\1426~1.288\\bin\\Hostx86\\x86\\cl.exe  /nologo /TP   /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MDd /Zi /Ob0 /Od /RTC1 /FoCMakeFiles\\Player.dir\\player.cpp.obj /FdCMakeFiles\\Player.dir\\Player.pdb /FS -c C:\\Users\\mvelz\\Documents\\LethalAI\\environment\\game_model\\player.cpp",
+  "command": "C:\\PROGRA~2\\MICROS~1\\2019\\COMMUN~1\\VC\\Tools\\MSVC\\1426~1.288\\bin\\Hostx86\\x86\\cl.exe  /nologo /TP   /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MD /O2 /Ob2 /DNDEBUG /FoCMakeFiles\\Player.dir\\player.cpp.obj /FdCMakeFiles\\Player.dir\\Player.pdb /FS -c C:\\Users\\mvelz\\Documents\\LethalAI\\environment\\game_model\\player.cpp",
   "file": "C:/Users/mvelz/Documents/LethalAI/environment/game_model/player.cpp"
+},
+{
+  "directory": "C:/Users/mvelz/Documents/LethalAI/build/environment/game_model",
+  "command": "C:\\PROGRA~2\\MICROS~1\\2019\\COMMUN~1\\VC\\Tools\\MSVC\\1426~1.288\\bin\\Hostx86\\x86\\cl.exe  /nologo /TP   /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MD /O2 /Ob2 /DNDEBUG /FoCMakeFiles\\Ball.dir\\ball.cpp.obj /FdCMakeFiles\\Ball.dir\\Ball.pdb /FS -c C:\\Users\\mvelz\\Documents\\LethalAI\\environment\\game_model\\ball.cpp",
+  "file": "C:/Users/mvelz/Documents/LethalAI/environment/game_model/ball.cpp"
+},
+{
+  "directory": "C:/Users/mvelz/Documents/LethalAI/build/environment/events",
+  "command": "C:\\PROGRA~2\\MICROS~1\\2019\\COMMUN~1\\VC\\Tools\\MSVC\\1426~1.288\\bin\\Hostx86\\x86\\cl.exe  /nologo /TP   /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MD /O2 /Ob2 /DNDEBUG /FoCMakeFiles\\Event.dir\\event.cpp.obj /FdCMakeFiles\\Event.dir\\Event.pdb /FS -c C:\\Users\\mvelz\\Documents\\LethalAI\\environment\\events\\event.cpp",
+  "file": "C:/Users/mvelz/Documents/LethalAI/environment/events/event.cpp"
+},
+{
+  "directory": "C:/Users/mvelz/Documents/LethalAI/build/environment/events",
+  "command": "C:\\PROGRA~2\\MICROS~1\\2019\\COMMUN~1\\VC\\Tools\\MSVC\\1426~1.288\\bin\\Hostx86\\x86\\cl.exe  /nologo /TP   /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MD /O2 /Ob2 /DNDEBUG /FoCMakeFiles\\BuntEvent.dir\\bunt_event.cpp.obj /FdCMakeFiles\\BuntEvent.dir\\BuntEvent.pdb /FS -c C:\\Users\\mvelz\\Documents\\LethalAI\\environment\\events\\bunt_event.cpp",
+  "file": "C:/Users/mvelz/Documents/LethalAI/environment/events/bunt_event.cpp"
+},
+{
+  "directory": "C:/Users/mvelz/Documents/LethalAI/build/environment/events",
+  "command": "C:\\PROGRA~2\\MICROS~1\\2019\\COMMUN~1\\VC\\Tools\\MSVC\\1426~1.288\\bin\\Hostx86\\x86\\cl.exe  /nologo /TP   /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MD /O2 /Ob2 /DNDEBUG /FoCMakeFiles\\DeathEvent.dir\\death_event.cpp.obj /FdCMakeFiles\\DeathEvent.dir\\DeathEvent.pdb /FS -c C:\\Users\\mvelz\\Documents\\LethalAI\\environment\\events\\death_event.cpp",
+  "file": "C:/Users/mvelz/Documents/LethalAI/environment/events/death_event.cpp"
+},
+{
+  "directory": "C:/Users/mvelz/Documents/LethalAI/build/environment/events",
+  "command": "C:\\PROGRA~2\\MICROS~1\\2019\\COMMUN~1\\VC\\Tools\\MSVC\\1426~1.288\\bin\\Hostx86\\x86\\cl.exe  /nologo /TP   /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MD /O2 /Ob2 /DNDEBUG /FoCMakeFiles\\HitEvent.dir\\hit_event.cpp.obj /FdCMakeFiles\\HitEvent.dir\\HitEvent.pdb /FS -c C:\\Users\\mvelz\\Documents\\LethalAI\\environment\\events\\hit_event.cpp",
+  "file": "C:/Users/mvelz/Documents/LethalAI/environment/events/hit_event.cpp"
+},
+{
+  "directory": "C:/Users/mvelz/Documents/LethalAI/build/gym",
+  "command": "C:\\PROGRA~2\\MICROS~1\\2019\\COMMUN~1\\VC\\Tools\\MSVC\\1426~1.288\\bin\\Hostx86\\x86\\cl.exe  /nologo /TP   /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MD /O2 /Ob2 /DNDEBUG /FoCMakeFiles\\LethalGym.dir\\lethal_gym.cpp.obj /FdCMakeFiles\\LethalGym.dir\\LethalGym.pdb /FS -c C:\\Users\\mvelz\\Documents\\LethalAI\\gym\\lethal_gym.cpp",
+  "file": "C:/Users/mvelz/Documents/LethalAI/gym/lethal_gym.cpp"
+},
+{
+  "directory": "C:/Users/mvelz/Documents/LethalAI/build/rl",
+  "command": "C:\\PROGRA~2\\MICROS~1\\2019\\COMMUN~1\\VC\\Tools\\MSVC\\1426~1.288\\bin\\Hostx86\\x86\\cl.exe  /nologo /TP  -ID:\\pytorch\\torch\\include -ID:\\pytorch\\torch\\include\\torch\\csrc\\api\\include /DWIN32 /D_WINDOWS /W3 /GR /EHsc  /MD /O2 /Ob2 /DNDEBUG /EHsc /DNOMINMAX /wd4267 /wd4251 /wd4522 /wd4838 /wd4305 /wd4244 /wd4190 /wd4101 /wd4996 /wd4275 /bigobj /FoCMakeFiles\\MainDqn.dir\\main_dqn.cpp.obj /FdCMakeFiles\\MainDqn.dir\\MainDqn.pdb /FS -c C:\\Users\\mvelz\\Documents\\LethalAI\\rl\\main_dqn.cpp",
+  "file": "C:/Users/mvelz/Documents/LethalAI/rl/main_dqn.cpp"
 }
 ]

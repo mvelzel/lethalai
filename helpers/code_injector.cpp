@@ -111,29 +111,24 @@ namespace helpers {
                 GetModuleHandleA("speedhack-i386.dll"),
                 "InitializeSpeedhack"); 
         if (initialize_speedhack != 0) {
-            std::cout << "Found InitializeSpeedhack at: " << initialize_speedhack << std::endl;
+            //std::cout << "Found InitializeSpeedhack at: " << initialize_speedhack << std::endl;
             game_speed = speed;
             HANDLE current_process = GetCurrentProcess();
 
-            union f2u {
-                float f;
-                uint32_t u;
-            };
-            f2u f = {game_speed};
             HANDLE thread = CreateRemoteThread(
-                    GetCurrentProcess(), NULL, NULL, 
+                    current_process, NULL, NULL, 
                     (LPTHREAD_START_ROUTINE) initialize_speedhack,
-                    (LPVOID)f.u, NULL, NULL);
+                    (LPVOID)*(DWORD*)&game_speed, NULL, NULL);
 
 
             if (thread) {
-                std::cout << "Called remote thread: " << thread << std::endl;
+                //std::cout << "Called remote thread: " << thread << std::endl;
+                WaitForSingleObject(thread, INFINITE);
                 CloseHandle(thread);
             } else {
                 std::cout << "Creating remote thread failed." << std::endl;
             }
         } else {
-
             std::cout << "Cannot load speedhack, speedhack-i386.dll not found." << std::endl;
         }
     }
