@@ -1,3 +1,5 @@
+add_subdirectory(distributions)
+
 add_library(
     Logger
     logger.cpp

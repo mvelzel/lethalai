@@ -69,10 +69,10 @@ namespace environment {
                     this->x_coord, GameState::kMinX, GameState::kMaxX));
         result.push_back(helpers::Math::Normalize(
                     this->y_coord, GameState::kMinY, GameState::kMaxY));
-        result.push_back(helpers::Math::Normalize(
-                    this->x_velocity, Ball::kMinVelocity, Ball::kMaxVelocity));
-        result.push_back(helpers::Math::Normalize(
-                    this->y_velocity, Ball::kMinVelocity, Ball::kMaxVelocity));
+        result.push_back(helpers::Math::NormalizeRange(
+                    this->x_velocity, Ball::kMinVelocity, Ball::kMaxVelocity, -1.0f, 1.0f));
+        result.push_back(helpers::Math::NormalizeRange(
+                    this->y_velocity, Ball::kMinVelocity, Ball::kMaxVelocity, -1.0f, 1.0f));
         result.push_back(helpers::Math::Normalize(
                     this->ball_speed, 0.0f, Ball::kMaxBallSpeed));
         // TODO fix this for primary/secondary players

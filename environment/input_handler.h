@@ -13,6 +13,7 @@ namespace environment {
         kLeft,
         kRight,
         kJump,
+        kNone,
         kTaunt
     };
 

@@ -329,13 +329,18 @@ namespace environment {
         DWORD* ball_position = new DWORD[2];
         ball_position[0] = x;
         ball_position[1] = y;
-        CreateRemoteThread(GetCurrentProcess(), NULL, 0,
+        HANDLE thread = CreateRemoteThread(GetCurrentProcess(), NULL, 0,
                 (LPTHREAD_START_ROUTINE) SpawnBallRemote,
                 ball_position, NULL, NULL);
+
+        if (thread) {
+            WaitForSingleObject(thread, INFINITE);
+            CloseHandle(thread);
+        }
     }
 
     void StateObserver::SpawnPlayer(int player_number) {
-        if (player_number < 0)
+        if (player_spawn_object == 0 || player_number < 0)
             return;
         Player* player = this->game_state->GetPlayers()[player_number];
         if (player == NULL)
@@ -344,9 +349,13 @@ namespace environment {
         DWORD* player_base = new DWORD(player->GetPlayerBase());
         if (player_base == NULL || *player_base == 0)
             return;
-        CreateRemoteThread(GetCurrentProcess(), NULL, 0,
+        HANDLE thread = CreateRemoteThread(GetCurrentProcess(), NULL, 0,
                 (LPTHREAD_START_ROUTINE) SpawnPlayerRemote,
                 player_base, NULL, NULL);
+        if (thread) {
+            WaitForSingleObject(thread, INFINITE);
+            CloseHandle(thread);
+        }
     }
 
     void StateObserver::HealPlayer(int player_number, int amount) {

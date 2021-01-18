@@ -1,9 +1,11 @@
 #include "lethal_gym.h"
 #include <Windows.h>
 #include <iostream>
+#include <math.h>
 #include <mutex>
 #include <tuple>
 #include "../helpers/code_injector.h"
+#include "../helpers/math_helpers.h"
 
 namespace gym {
     LethalGym* global_lethal_gym;
@@ -20,7 +22,16 @@ namespace gym {
         for (int i = 0; i < 4; i++) {
             environment::Player* player = players[i];
             if (player != NULL) {
-                if (!global_lethal_gym->done && player->GetCharacterState() == 18)
+                if (!global_lethal_gym->done && (player->GetCharacterState() == 18 ||
+                            game_state->GetBall()->GetBallSpeed() <= 0 ||
+                            game_state->GetBall()->GetXCoord() > environment::GameState::kMaxX ||
+                            game_state->GetBall()->GetXCoord() < environment::GameState::kMinX ||
+                            game_state->GetBall()->GetYCoord() > environment::GameState::kMaxY ||
+                            game_state->GetBall()->GetYCoord() < environment::GameState::kMinY ||
+                            player->GetYCoord() > environment::GameState::kMaxY ||
+                            player->GetYCoord() < environment::GameState::kMinY ||
+                            player->GetXCoord() > environment::GameState::kMaxX ||
+                            player->GetXCoord() < environment::GameState::kMinX))
                     return;
             }
         }
@@ -63,13 +74,14 @@ namespace gym {
         this->input_handler = new environment::InputHandler(true);
         //this->input_handler->DisableOverride(1);
         this->input_handler->Inject();
+        this->graphics_handler = new graphics::GraphicsHandler();
         this->state_observer = new environment::StateObserver(true);
         this->event_observer = new environment::EventObserver(true);
         this->event_observer->SetObserver(HandleEvent);
         this->state_observer->SetObserver(HandleObservation);
     }
 
-    std::tuple<environment::GameState*, float, bool> LethalGym::Step(
+    std::tuple<environment::GameState*, float*, bool> LethalGym::Step(
             std::vector<std::vector<environment::InputAction>> actions) {
         //std::cout << "Step Called" << std::endl;
         bool d = this->done;
@@ -85,6 +97,7 @@ namespace gym {
         while (!this->game_notified)
             this->condition.notify_one();
 
+        
         //std::cout << "Step Waiting" << std::endl;
         {
             std::unique_lock<std::mutex> lk(this->mutex);
@@ -94,12 +107,35 @@ namespace gym {
         }
         //std::cout << "Step Done Waiting" << std::endl;
 
-        float reward = this->newest_reward;
-        if (reward == 0.0f)
-            reward = -1.0f;
+        float reward[2] = { this->newest_reward[0], this->newest_reward[1] };
+        this->newest_reward[0] = 0.0f;
+        this->newest_reward[1] = 0.0f;
+        //TODO separate state-based rewards
+        bool is_done[2] = { false, false };
+        for (int i = 0; i < 2; i++) {
+            if (reward[i] == 0.0f) {
+                //reward = -1.0f;
+                this->steps_since_reward[i] += 1;
+                float x1 = this->newest_observation->GetPlayers()[i]->GetXCoord();
+                float y1 = this->newest_observation->GetPlayers()[i]->GetYCoord();
+                float x2 = this->newest_observation->GetBall()->GetXCoord();
+                float y2 = this->newest_observation->GetBall()->GetYCoord();
+                float dist = sqrt(pow(x1-x2, 2) + pow(y1-y2, 2));
+                float m = 78118913.0f;
+                float norm = helpers::Math::NormalizeRange(dist, 0, m,
+                        0.0f, 0.5f);
+                reward[i] = -norm + 0.25f;
+            } else {
+                this->steps_since_reward[i] = 0;
+            }
+            if (this->steps_since_reward[i] >= this->kMaxEmptySteps) {
+                is_done[i] = true;
+                //reward = -1000.0f;
+            }
+        }
+        if (is_done[0] && is_done[1])
+            this->done = true;
         d = this->done;
-        if (!d)
-            this->newest_reward = 0.0f;
         return std::make_tuple(this->newest_observation, reward, d);
     }
 
@@ -107,6 +143,10 @@ namespace gym {
         {
             std::lock_guard<std::mutex> lk(this->mutex);
             this->action_queued = false;
+            this->steps_since_reward[0] = 0;
+            this->steps_since_reward[1] = 0;
+            this->newest_reward[0] = 0;
+            this->newest_reward[1] = 0;
         }
         this->condition.notify_one();
         while (!this->game_notified)
@@ -129,7 +169,6 @@ namespace gym {
         this->dying_player = -1;
         helpers::CodeInjector::SpeedHack(10.0f);
         this->state_observer->SpawnBall();
-        // TODO fix this
         this->state_observer->SpawnPlayers();
 
         {
@@ -172,7 +211,7 @@ namespace gym {
                     //std::cout << "Player " << i + 1 << " Base: " << std::hex << player_base << std::endl;
                     if (player_base == context) {
                         this->done = !this->done && players[i]->GetStocks() == 1;
-                        relevant_player = i + 1;
+                        relevant_player = i;
                         break;
                     }
                 }
@@ -181,29 +220,38 @@ namespace gym {
         switch (event->GetId()) {
             case 0:
                 //Death event
-                this->dying_player = relevant_player - 1;
-                if (relevant_player == 1) {
-                    this->newest_reward -= 300.0f;
+                this->dying_player = relevant_player;
+                if (relevant_player == 0) {
+                    this->newest_reward[0] -= 400.0f;
+                    this->newest_reward[1] -= 400.0f;
                     return;    
                 }
-                else if (relevant_player == 2) {
-                    this->newest_reward += 300.0f;
+                else if (relevant_player == 1) {
+                    this->newest_reward[1] -= 400.0f;
+                    this->newest_reward[0] -= 400.0f;
                     return;
                 }
                 break;
             case 1:
                 //Bunt event
-                if (relevant_player == 1) {
-                    this->newest_reward += 30.0f;
+                if (relevant_player == 0) {
+                    this->newest_reward[0] += 50.0f;
+                    return;
+                } else if (relevant_player == 1) {
+                    this->newest_reward[1] += 50.0f;
                     return;
                 }
                 break;
             case 2:
                 //Hit event
-                if (relevant_player == 1) {
-                    this->newest_reward += 50.0f;
+                if (relevant_player == 0) {
+                    this->newest_reward[0] += 80.0f;
+                    return;
+                } else if (relevant_player == 1) {
+                    this->newest_reward[1] += 80.0f;
                     return;
                 }
+                break;
         }
     }
 }

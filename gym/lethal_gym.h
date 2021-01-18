@@ -8,6 +8,7 @@
 #include "../environment/game_state.h"
 #include "../environment/state_observer.h"
 #include "../environment/event_observer.h"
+#include "../graphics/graphics_handler.h"
 
 namespace gym {
     class LethalGym {
@@ -16,8 +17,11 @@ namespace gym {
             environment::EventObserver* event_observer;
             environment::GameState* newest_observation = NULL;
             environment::StateObserver* state_observer = NULL;
-            float newest_reward = 0.0f;
+            graphics::GraphicsHandler* graphics_handler = NULL;
+            float newest_reward[2] = { 0.0f, 0.0f };
             int dying_player = -1;
+            int steps_since_reward[2] = { 0, 0 };
+            const int kMaxEmptySteps = 1000;
         public:
             bool game_notified = true;
             bool thread_notified = true;
@@ -27,7 +31,7 @@ namespace gym {
             std::vector<std::vector<environment::InputAction>> queued_actions;
             LethalGym();
             bool action_queued;
-            std::tuple<environment::GameState*, float, bool> Step(
+            std::tuple<environment::GameState*, float*, bool> Step(
                     std::vector<std::vector<environment::InputAction>> actions);
             environment::GameState* Reset();
             environment::InputHandler* GetInputHandler();

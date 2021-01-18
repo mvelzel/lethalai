@@ -28,7 +28,7 @@ namespace environment {
             static const int kMaxVelocity = 10000000;
             static const int kMinVelocity = -10000000;
             
-            static const int kMaxSpecialMeter = 4;
+            static const int kMaxSpecialMeter = 6553600;
             static const int kMaxStocks = 8;
 
             int GetXCoord();

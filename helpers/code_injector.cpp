@@ -127,6 +127,7 @@ namespace helpers {
                 CloseHandle(thread);
             } else {
                 std::cout << "Creating remote thread failed." << std::endl;
+                std::cout << GetLastError() << std::endl;
             }
         } else {
             std::cout << "Cannot load speedhack, speedhack-i386.dll not found." << std::endl;

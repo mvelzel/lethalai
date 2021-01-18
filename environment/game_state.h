@@ -13,11 +13,11 @@ namespace environment {
         public:
             GameState();
 
-            static const int kMinX = 1000000;
-            static const int kMaxX = 100000000;
+            static const int kMinX = 2162688;
+            static const int kMaxX = 81723392;
 
-            static const int kMinY = 1000000;
-            static const int kMaxY = 56687500;
+            static const int kMinY = 2162688;
+            static const int kMaxY = 33423360;
 
             Player** GetPlayers();
             void SetPlayers(Player* players[4]);

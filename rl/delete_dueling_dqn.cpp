@@ -1,4 +1,4 @@
-#include "dqn_agent.h"
+#include "dueling_dqn.h"
 #include "ATen/Functions.h"
 #include "c10/core/ScalarType.h"
 #include "torch/csrc/autograd/generated/variable_factories.h"
@@ -8,13 +8,14 @@
 namespace rl {
     torch::Device device(torch::kCPU);
 
-    DeepQNetworkImpl::DeepQNetworkImpl(float lr, int input_dims, int fc1_dims,
+    DuelingDeepQNetworkImpl::DuelingDeepQNetworkImpl(float lr, int input_dims, int fc1_dims,
             int fc2_dims, int n_actions):
         fc1(register_module("fc1", torch::nn::Linear(input_dims, fc1_dims))),
         fc2(register_module("fc2", torch::nn::Linear(fc1_dims, fc2_dims))),
-        fc3(register_module("fc3", torch::nn::Linear(fc2_dims, n_actions))),
+        V(register_module("V", torch::nn::Linear(fc2_dims, 1))),
+        A(register_module("A", torch::nn::Linear(fc2_dims, n_actions))),
         optimizer(torch::optim::Adam(this->parameters(),
-                   torch::optim::AdamOptions(lr))) {
+                    torch::optim::AdamOptions(lr))) {
             this->lr = lr;
             this->input_dims = input_dims;
             this->fc1_dims = fc1_dims;
@@ -24,18 +25,20 @@ namespace rl {
             this->to(device);
         }
 
-    torch::Tensor DeepQNetworkImpl::forward(torch::Tensor state) {
+    std::tuple<torch::Tensor, torch::Tensor> DuelingDeepQNetworkImpl::forward(
+            torch::Tensor state) {
         torch::Tensor x = torch::relu(this->fc1->forward(state));
         x = torch::relu(this->fc2->forward(x));
-        torch::Tensor actions = this->fc3->forward(x);
+        torch::Tensor V = this->V->forward(x);
+        torch::Tensor A = this->A->forward(x);
 
-        return actions;
+        return std::make_tuple(V, A);
     }
 
-    
-    DeepQAgent::DeepQAgent(float gamma, float epsilon, float lr, int input_dims,
+
+    DuelingDeepQAgent::DuelingDeepQAgent(float gamma, float epsilon, float lr, int input_dims,
             int batch_size, int n_actions, int max_mem_size,
-            float eps_end, float eps_dec) {
+            float eps_end, float eps_dec, int replace) {
         this->gamma = gamma;
         this->epsilon = epsilon;
         this->eps_min = eps_end;
@@ -44,11 +47,14 @@ namespace rl {
         for (int i = 0; i < n_actions; i++) {
             this->action_space.push_back(i);
         }
+        this->learn_step_counter = 0;
+        this->replace_target_cnt = replace;
         this->mem_size = max_mem_size;
         this->batch_size = batch_size;
         this->mem_cntr = 0;
 
-        this->q_eval = new DeepQNetwork(this->lr, input_dims, 256, 256, n_actions);
+        this->q_eval = new DuelingDeepQNetwork(this->lr, input_dims, 128, 128, n_actions);
+        this->q_next = new DuelingDeepQNetwork(this->lr, input_dims, 128, 128, n_actions);
 
         this->state_memory = std::vector<std::vector<float>>(max_mem_size,
                 std::vector<float>(n_actions));
@@ -59,7 +65,7 @@ namespace rl {
         this->terminal_memory = std::vector<bool>(max_mem_size, false);
     }
 
-    void DeepQAgent::StoreTransition(std::vector<float> state, int action,
+    void DuelingDeepQAgent::StoreTransition(std::vector<float> state, int action,
             float reward, std::vector<float> new_state, bool done) {
         std::lock_guard<std::mutex> lk(this->mutex2);
         int index = this->mem_cntr % this->mem_size;
@@ -73,13 +79,14 @@ namespace rl {
         this->ready_to_learn = true;
     }
 
-    int DeepQAgent::ChooseAction(std::vector<float> observation) {
+    int DuelingDeepQAgent::ChooseAction(std::vector<float> observation) {
         if (//!this->using_mutex &&
                 (float) rand() / (RAND_MAX) > this->epsilon) {
             torch::Tensor state = torch::tensor(observation).to(device);
             {
                 std::lock_guard<std::mutex> lock(this->mutex);
-                torch::Tensor actions = (*this->q_eval)->forward(state).to(device);
+                auto res = (*this->q_eval)->forward(state);
+                torch::Tensor actions = std::get<1>(res);
                 return torch::argmax(actions).item<int>();
             }
         } else {
@@ -87,7 +94,15 @@ namespace rl {
         }
     }
 
-    void DeepQAgent::Learn() {
+    void DuelingDeepQAgent::ReplaceTargetNetwork() {
+        if (this->learn_step_counter % this->replace_target_cnt == 0) {
+            std::lock_guard<std::mutex> lk(this->mutex);
+            torch::save((*this->q_eval), "tmp.pt");
+            torch::load((*this->q_next), "tmp.pt");
+        }
+    }
+
+    void DuelingDeepQAgent::Learn() {
         int cntr;
         {
             std::lock_guard<std::mutex> lk(this->mutex2);
@@ -97,12 +112,15 @@ namespace rl {
             return;
         (*this->q_eval)->optimizer.zero_grad();
 
+        this->ReplaceTargetNetwork();
+
         int max_mem = std::min(cntr, this->mem_size);
         std::vector<int> batch(max_mem);
+
         std::iota(batch.begin(), batch.end(), 0);
         std::random_shuffle(batch.begin(), batch.end());
         batch.resize(this->batch_size);
-        
+
         std::vector<float> _state_batch;
         int size;
         {
@@ -115,7 +133,7 @@ namespace rl {
             }
         }
         torch::Tensor state_batch = torch::from_blob(_state_batch.data(),
-                { batch_size, size }, at::kFloat).to(device);
+                { batch_size, size }, torch::kFloat).to(device);
         std::vector<float> _new_state_batch;
         {
             std::lock_guard<std::mutex> lk(this->mutex2);
@@ -127,7 +145,7 @@ namespace rl {
             }
         }
         torch::Tensor new_state_batch = torch::from_blob(_new_state_batch.data(),
-                { batch_size, size }, at::kFloat).to(device);
+                { batch_size, size }, torch::kFloat).to(device);
 
         std::vector<float> _reward_batch;
         {
@@ -137,7 +155,7 @@ namespace rl {
             }
         }
         torch::Tensor reward_batch = torch::from_blob(_reward_batch.data(),
-                { batch_size }, at::kFloat).to(device);
+                { batch_size }, torch::kFloat).to(device);
 
         std::vector<int> _terminal_batch;
         {
@@ -147,49 +165,53 @@ namespace rl {
             }
         }
         torch::Tensor terminal_batch = torch::from_blob(_terminal_batch.data(),
-                { batch_size }, at::kBool).to(device);
+                { batch_size }, torch::kBool).to(device);
 
-        std::vector<int> action_batch;
+        std::vector<int64_t> _action_batch;
         {
             std::lock_guard<std::mutex> lk(this->mutex2);
             for (int i = 0; i < batch_size; i++) {
-                action_batch.push_back(this->action_memory[batch[i]]);
+                _action_batch.push_back(this->action_memory[batch[i]]);
             }
         }
+        torch::Tensor action_batch = torch::from_blob(_action_batch.data(),
+                { batch_size }, torch::kInt64).to(device);
 
-        torch::Tensor next;
-        torch::Tensor eval;
         {
             std::lock_guard<std::mutex> lock(this->mutex);
             this->using_mutex = true;
-            eval = (*this->q_eval)->forward(state_batch).to(device);
-            next = (*this->q_eval)->forward(new_state_batch).to(device);
-            next.index_put_({ terminal_batch }, 0.0f);
-        //    this->using_mutex = false;
-        //}
-        eval = eval.index({torch::indexing::Slice(0, batch_size),
-                    torch::tensor(action_batch)});
-                
-        torch::Tensor target = reward_batch +
-            this->gamma * std::get<0>(torch::max(next, 1));
-        //{
-        //    std::lock_guard<std::mutex> lock(this->mutex);
-        //    this->using_mutex = true;
-            torch::Tensor loss = torch::mse_loss(target, eval).to(device);
+            auto res1 = (*this->q_eval)->forward(state_batch);
+            auto res2 = (*this->q_next)->forward(new_state_batch);
+
+            torch::Tensor V_s = std::get<0>(res1);
+            torch::Tensor A_s = std::get<1>(res1);
+            torch::Tensor V_s_ = std::get<0>(res2);
+            torch::Tensor A_s_ = std::get<1>(res2);
+
+            torch::Tensor q_pred = torch::add(V_s, torch::sub(A_s, A_s.mean(1, true)))
+                .gather(1,  action_batch.unsqueeze(-1));
+            torch::Tensor q_next = torch::add(V_s_, torch::sub(A_s_, A_s_.mean(1, true)));
+
+            torch::Tensor q_target = reward_batch +
+                this->gamma * std::get<0>(torch::max(q_next, 1)).detach();
+            q_target.index_put_({ terminal_batch }, 0.0f);
+
+            torch::Tensor loss = torch::mse_loss(q_pred, q_target).to(device);
             loss.backward();
             (*this->q_eval)->optimizer.step();
+            this->learn_step_counter += 1;
             this->using_mutex = false;
-        }
+    }
 
-        if (this->epsilon > this->eps_min) {
-            this->epsilon = this->epsilon - this->eps_dec;
-        } else {
-            this->epsilon = this->eps_min;
-        }
+    if (this->epsilon > this->eps_min) {
+        this->epsilon = this->epsilon - this->eps_dec;
+    } else {
+        this->epsilon = this->eps_min;
+    }
 
-        {
-            std::lock_guard<std::mutex> lk(this->mutex2);
-            this->ready_to_learn = false;
-        }
+    {
+        std::lock_guard<std::mutex> lk(this->mutex2);
+        this->ready_to_learn = false;
+    }
     }
 }

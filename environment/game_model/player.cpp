@@ -103,10 +103,10 @@ namespace environment {
         result.push_back(helpers::Math::Normalize(
                     this->y_coord, GameState::kMinY, GameState::kMaxY));
         result.push_back(this->facing_direction);
-        result.push_back(helpers::Math::Normalize(
-                    this->x_velocity, Player::kMinVelocity, Player::kMaxVelocity));
-        result.push_back(helpers::Math::Normalize(
-                    this->y_velocity, Player::kMinVelocity, Player::kMaxVelocity));
+        result.push_back(helpers::Math::NormalizeRange(
+                    this->x_velocity, Player::kMinVelocity, Player::kMaxVelocity, -1.0f, 1.0f));
+        result.push_back(helpers::Math::NormalizeRange(
+                    this->y_velocity, Player::kMinVelocity, Player::kMaxVelocity, -1.0f, 1.0f));
         std::vector<float> c_state(Player::kCharacterStateCount, 0.0f);
         c_state[this->character_state] = 1.0f;
         std::vector<float> a_state(Player::kAnimationStateCount, 0.0f);
