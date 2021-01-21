@@ -9,6 +9,7 @@
 #include "../environment/state_observer.h"
 #include "../environment/event_observer.h"
 #include "../graphics/graphics_handler.h"
+#include "../graphics/drawables/info_list.h"
 
 namespace gym {
     class LethalGym {
@@ -17,12 +18,14 @@ namespace gym {
             environment::EventObserver* event_observer;
             environment::GameState* newest_observation = NULL;
             environment::StateObserver* state_observer = NULL;
-            graphics::GraphicsHandler* graphics_handler = NULL;
             float newest_reward[2] = { 0.0f, 0.0f };
             int dying_player = -1;
             int steps_since_reward[2] = { 0, 0 };
             const int kMaxEmptySteps = 1000;
+
         public:
+            graphics::GraphicsHandler* graphics_handler = NULL;
+            graphics::InfoList* info_list = NULL;
             bool game_notified = true;
             bool thread_notified = true;
             bool done = false;

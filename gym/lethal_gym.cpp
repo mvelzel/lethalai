@@ -18,10 +18,14 @@ namespace gym {
 
     void HandleObservation(environment::GameState* game_state) {
         //std::cout << "Game Called" << std::endl;
+        if (game_state->GetBall() == NULL)
+            return;
         environment::Player** players = game_state->GetPlayers();
+        bool cont = false;
         for (int i = 0; i < 4; i++) {
             environment::Player* player = players[i];
             if (player != NULL) {
+                cont = true;
                 if (!global_lethal_gym->done && (player->GetCharacterState() == 18 ||
                             game_state->GetBall()->GetBallSpeed() <= 0 ||
                             game_state->GetBall()->GetXCoord() > environment::GameState::kMaxX ||
@@ -35,6 +39,8 @@ namespace gym {
                     return;
             }
         }
+        if (!cont)
+            return;
         //std::cout << "New Observation" << std::endl;
         //Notify Step of new state
         {
@@ -75,6 +81,8 @@ namespace gym {
         //this->input_handler->DisableOverride(1);
         this->input_handler->Inject();
         this->graphics_handler = new graphics::GraphicsHandler();
+        this->info_list = new graphics::InfoList(0, 0);
+        this->graphics_handler->AddDrawable(info_list);
         this->state_observer = new environment::StateObserver(true);
         this->event_observer = new environment::EventObserver(true);
         this->event_observer->SetObserver(HandleEvent);
@@ -124,7 +132,7 @@ namespace gym {
                 float m = 78118913.0f;
                 float norm = helpers::Math::NormalizeRange(dist, 0, m,
                         0.0f, 0.5f);
-                reward[i] = -norm + 0.25f;
+                reward[i] = -norm + 0.2f;
             } else {
                 this->steps_since_reward[i] = 0;
             }
@@ -160,15 +168,10 @@ namespace gym {
             this->thread_notified = true;
         }
 
-        for (int i = 0; i < 4; i++) {
-            if (this->dying_player == i)
-                this->state_observer->HealPlayer(i, 9);
-            else
-                this->state_observer->HealPlayer(i, 8);
-        }
         this->dying_player = -1;
         helpers::CodeInjector::SpeedHack(10.0f);
         this->state_observer->SpawnBall();
+        this->state_observer->HealPlayers(8);
         this->state_observer->SpawnPlayers();
 
         {
@@ -210,7 +213,16 @@ namespace gym {
                     unsigned int player_base = players[i]->GetPlayerBase();
                     //std::cout << "Player " << i + 1 << " Base: " << std::hex << player_base << std::endl;
                     if (player_base == context) {
-                        this->done = !this->done && players[i]->GetStocks() == 1;
+                        this->done = !this->done && event->GetId() == 0 && 
+                            players[i]->GetStocks() == 1;
+                        if (done) {
+                            for (int j = 0; j < 4; j++) {
+                                if (j == i)
+                                    this->state_observer->HealPlayer(j, 8);
+                                else
+                                    this->state_observer->HealPlayer(j, 8);
+                            }
+                        }
                         relevant_player = i;
                         break;
                     }
@@ -223,12 +235,16 @@ namespace gym {
                 this->dying_player = relevant_player;
                 if (relevant_player == 0) {
                     this->newest_reward[0] -= 400.0f;
-                    this->newest_reward[1] -= 400.0f;
-                    return;    
+                    this->newest_reward[1] += 400.0f;
+                    this->info_list->SetRecentP1(-400.0f);
+                    this->info_list->SetRecentP2(400.0f);
+                    return;
                 }
                 else if (relevant_player == 1) {
                     this->newest_reward[1] -= 400.0f;
-                    this->newest_reward[0] -= 400.0f;
+                    this->newest_reward[0] += 400.0f;
+                    this->info_list->SetRecentP1(400.0f);
+                    this->info_list->SetRecentP2(-400.0f);
                     return;
                 }
                 break;
@@ -236,9 +252,11 @@ namespace gym {
                 //Bunt event
                 if (relevant_player == 0) {
                     this->newest_reward[0] += 50.0f;
+                    this->info_list->SetRecentP1(50.0f);
                     return;
                 } else if (relevant_player == 1) {
                     this->newest_reward[1] += 50.0f;
+                    this->info_list->SetRecentP2(50.0f);
                     return;
                 }
                 break;
@@ -246,9 +264,11 @@ namespace gym {
                 //Hit event
                 if (relevant_player == 0) {
                     this->newest_reward[0] += 80.0f;
+                    this->info_list->SetRecentP1(80.0f);
                     return;
                 } else if (relevant_player == 1) {
                     this->newest_reward[1] += 80.0f;
+                    this->info_list->SetRecentP2(80.0f);
                     return;
                 }
                 break;

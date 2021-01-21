@@ -95,22 +95,8 @@ namespace graphics {
     }
 
     void GraphicsHandler::Draw(RECT const *rect) {
-        glColor3f(1.0f, 0, 0);
-        glBegin(GL_QUADS);
-        glVertex2f(0,190.0f);
-        glVertex2f(100.0f, 190.0f);
-        glVertex2f(100.0f,290.0f);
-        glVertex2f(0, 290.0f);
-        glEnd();
-
-        glRasterPos2f(300.0f, 200.0f);
-
-        try {
-            for (char* c = "string"; *c != '\0'; c++) {
-                glutBitmapCharacter(GLUT_BITMAP_8_BY_13, *c);  // Updates the position
-            }
-        } catch (const std::exception& e) {
-            std::cout << e.what() << std::endl;
+        for (Drawable* drawable : this->draw_list) {
+            drawable->Draw(rect);
         }
     }
 
@@ -124,5 +110,9 @@ namespace graphics {
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
         glClearColor(0, 0, 0, 1.0);
+    }
+
+    void GraphicsHandler::AddDrawable(Drawable *drawable) {
+        this->draw_list.push_back(drawable);
     }
 }

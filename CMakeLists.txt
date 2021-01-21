@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(LethalAI)
 
-set(CMAKE_PREFIX_PATH "Q:/pytorch;Q:/freeglut")
+set(CMAKE_PREFIX_PATH "D:/pytorch;D:/freeglut")
 
 find_package(Torch REQUIRED)
 find_package(OpenGL REQUIRED)
@@ -36,6 +36,8 @@ target_link_libraries(LethalAI PRIVATE ActorCritic)
 target_link_libraries(LethalAI PRIVATE ReplayBuffer)
 target_link_libraries(LethalAI PRIVATE MultiAgent)
 target_link_libraries(LethalAI PRIVATE GraphicsHandler)
+target_link_libraries(LethalAI PRIVATE InfoList)
+target_link_libraries(LethalAI PRIVATE Graph)
 
 if (MSVC)
   file(GLOB TORCH_DLLS "${TORCH_INSTALL_PREFIX}/lib/*.dll")

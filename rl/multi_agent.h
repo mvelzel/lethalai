@@ -4,6 +4,7 @@
 #include <deque>
 #include "../environment/game_state.h"
 #include "../environment/input_handler.h"
+#include "../gym/lethal_gym.h"
 #include "agent.h"
 
 namespace rl {
@@ -25,6 +26,8 @@ namespace rl {
             Agent *agent1;
             Agent *agent2;
 
+            gym::LethalGym* gym;
+
             bool is_demonstration;
 
             void SavePolicy();
@@ -32,7 +35,7 @@ namespace rl {
             void ChangeTeams();
         public:
             MultiAgent(int save_steps, int team_change, int swap_steps,
-                    int window, float play_against_latest_model_ratio,
+                    int window, float play_against_latest_model_ratio, gym::LethalGym *gym,
                     bool continue_training=false, bool is_demonstration=false);
 
             std::vector<std::vector<environment::InputAction>> ChooseActions(

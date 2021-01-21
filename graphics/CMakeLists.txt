@@ -1,5 +1,7 @@
 include_directories(${GLUT_INCLUDE_DIR})
 
+add_subdirectory(drawables)
+
 add_library(
     Drawable
     drawable.cpp

@@ -1,4 +1,5 @@
 #pragma once
+#include <Windows.h>
 
 namespace graphics {
     class Drawable {
@@ -13,6 +14,6 @@ namespace graphics {
         public:
             Drawable(int x, int y);
 
-            virtual void Draw() = 0;
+            virtual void Draw(RECT const *rect) = 0;
     };
 }

@@ -1,12 +1,14 @@
 #include "multi_agent.h"
-#include <random>
 #include "./agents/actor_critic.h"
 #include "./agents/dueling_dqn.h"
+#include "action_translator.h"
 
 namespace rl {
     MultiAgent::MultiAgent(int save_steps, int team_change, int swap_steps,
-            int window, float play_against_latest_model_ratio,
+            int window, float play_against_latest_model_ratio, gym::LethalGym *gym,
             bool continue_training, bool is_demonstration) {
+        this->gym = gym;
+        this->is_demonstration = is_demonstration;
         this->save_steps = save_steps;
         this->team_change = team_change;
         this->swap_steps = swap_steps;
@@ -18,10 +20,12 @@ namespace rl {
         this->swap_steps_counter = 0;
         this->active_agent = 0;
 
-        this->agent1 = new ActorCriticAgent(0.99f, 0.0001f, 148, 32, 8);
-        this->agent2 = new ActorCriticAgent(0.99f, 0.0001f, 148, 32, 8);
-        //this->agent1 = new DuelingDeepQAgent(0.99f, 1.0f, 0.001f, 148, 32, 8);
-        //this->agent2 = new DuelingDeepQAgent(0.99f, 1.0f, 0.001f, 148, 32, 8);
+        //this->agent1 = new ActorCriticAgent(0.99f, 0.0001f, 148, 32, 8);
+        //this->agent2 = new ActorCriticAgent(0.99f, 0.0001f, 148, 32, 8);
+        this->agent1 = new DuelingDeepQAgent(0.99f, 1.0f, 0.001f, 148, 32,
+                ActionTranslator::total_action_count);
+        this->agent2 = new DuelingDeepQAgent(0.99f, 1.0f, 0.001f, 148, 32,
+                ActionTranslator::total_action_count);
 
         if (!continue_training) {
             this->SavePolicy();
@@ -44,13 +48,10 @@ namespace rl {
         std::vector<float> obs_agent2 = observation->NormalizeFloats(1);
 
         std::vector<environment::InputAction> agent1_actions =
-            std::vector<environment::InputAction> {
-                static_cast<environment::InputAction>(
-                        this->agent1->ChooseAction(obs_agent1)) };
+            ActionTranslator::TranslateAction(this->agent1->ChooseAction(obs_agent1));
+
         std::vector<environment::InputAction> agent2_actions =
-            std::vector<environment::InputAction> {
-                static_cast<environment::InputAction>(
-                        this->agent2->ChooseAction(obs_agent2)) };
+            ActionTranslator::TranslateAction(this->agent2->ChooseAction(obs_agent2));
 
         actions.push_back(agent1_actions);
         actions.push_back(agent2_actions);
@@ -148,10 +149,16 @@ namespace rl {
     void MultiAgent::ChangeTeams() {
         if (this->active_agent == 0) {
             this->active_agent = 1;
+            this->gym->info_list->SetLearningP1(false);
+            this->gym->info_list->SetLearningP2(true);
             this->agent2->LoadCheckpoint(this->policy_deque.front());
+            this->agent1->LoadCheckpoint(this->policy_deque.front());
         } else if (this->active_agent == 1) {
             this->active_agent = 0;
+            this->gym->info_list->SetLearningP2(false);
+            this->gym->info_list->SetLearningP1(true);
             this->agent1->LoadCheckpoint(this->policy_deque.front());
+            this->agent2->LoadCheckpoint(this->policy_deque.front());
         }
     }
 }
