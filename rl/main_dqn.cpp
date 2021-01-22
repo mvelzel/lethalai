@@ -14,12 +14,12 @@ namespace rl {
         gym::LethalGym* lethal_gym = new gym::LethalGym();
         std::vector<float> scores_p1;
         std::vector<float> scores_p2;
-        int n_games = 1000;
+        int n_games = 5000;
         //std::vector<float> eps_history;
 
         MultiAgent multi_agent = MultiAgent(2000, 10000, 1000, 10, 0.5, lethal_gym, false, false);
 
-        graphics::Graph* graph = new graphics::Graph(0, 420, 50.0f, 2500.0f, 500.0f,
+        graphics::Graph* graph = new graphics::Graph(0, 420, 50.0f, 8.0f, 1.0f,
                 "Average Score");
         lethal_gym->graphics_handler->AddDrawable(graph);
 
@@ -74,9 +74,9 @@ namespace rl {
                         scores_p2.begin(), scores_p2.end(), 0.0) / scores_p2.size();
             } else {
                 average_score_p1 = 1.0 * std::accumulate(
-                        scores_p1.end() - 25, scores_p1.end(), 0.0) / scores_p1.size();
+                        scores_p1.end() - 25, scores_p1.end(), 0.0) / 25.0f; 
                 average_score_p2 = 1.0 * std::accumulate(
-                        scores_p2.end() - 25, scores_p2.end(), 0.0) / scores_p2.size();
+                        scores_p2.end() - 25, scores_p2.end(), 0.0) / 25.0f;
             }
             lethal_gym->info_list->SetAverageP1(average_score_p1);
             lethal_gym->info_list->SetAverageP2(average_score_p2);
