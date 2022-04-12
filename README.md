@@ -1,0 +1,1 @@
+This repo contains LethalAI, an reinforcement learning artificial intelligence for playing the game Lethal League. It is implemented with the PyTorch C++ library together with code caving with assembly and dll injection. 
