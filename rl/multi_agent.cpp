@@ -20,9 +20,13 @@ namespace rl {
         this->swap_steps_counter = 0;
         this->active_agent = 0;
 
-        this->agent1 = new ActorCriticAgent(0.99f, 0.00005f, 148, 32,
+        //this->agent1 = new ActorCriticAgent(0.99f, 0.00005f, 148, 32,
+        //        ActionTranslator::total_action_count);
+        //this->agent2 = new ActorCriticAgent(0.99f, 0.00005f, 148, 32,
+        //        ActionTranslator::total_action_count);
+        this->agent1 = new DuelingDeepQAgent(0.99f, 1.0f, 0.005f, 148, 32,
                 ActionTranslator::total_action_count);
-        this->agent2 = new ActorCriticAgent(0.99f, 0.00005f, 148, 32,
+        this->agent2 = new DuelingDeepQAgent(0.99f, 1.0f, 0.005f, 148, 32,
                 ActionTranslator::total_action_count);
         //this->agent1 = new DuelingDeepQAgent(0.99f, 1.0f, 0.001f, 148, 32,
         //        ActionTranslator::total_action_count);

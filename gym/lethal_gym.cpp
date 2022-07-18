@@ -133,8 +133,8 @@ namespace gym {
                 float dist = sqrt(pow(x1-x2, 2) + pow(y1-y2, 2));
                 float m = 78118913.0f;
                 float norm = helpers::Math::NormalizeRange(dist, 0, m,
-                        0.0f, 0.5f);
-                reward[i] = -norm + 0.2f;
+                        0.0f, 0.005f);
+                reward[i] = -norm + 0.002f;
             } else {
                 this->steps_since_reward[i] = 0;
             }
@@ -245,41 +245,41 @@ namespace gym {
                 //Death event
                 this->dying_player = relevant_player;
                 if (relevant_player == 0) {
-                    this->newest_reward[0] -= 400.0f;
-                    this->newest_reward[1] += 400.0f;
-                    this->info_list->SetRecentP1(-400.0f);
-                    this->info_list->SetRecentP2(400.0f);
+                    this->newest_reward[0] -= 0.8f;
+                    this->newest_reward[1] += 1.0f;
+                    this->info_list->SetRecentP1(-0.8f);
+                    this->info_list->SetRecentP2(1.0f);
                     return;
                 }
                 else if (relevant_player == 1) {
-                    this->newest_reward[1] -= 400.0f;
-                    this->newest_reward[0] += 400.0f;
-                    this->info_list->SetRecentP1(400.0f);
-                    this->info_list->SetRecentP2(-400.0f);
+                    this->newest_reward[1] -= 0.8f;
+                    this->newest_reward[0] += 1.0f;
+                    this->info_list->SetRecentP1(1.0f);
+                    this->info_list->SetRecentP2(-0.8f);
                     return;
                 }
                 break;
             case 1:
                 //Bunt event
                 if (relevant_player == 0) {
-                    this->newest_reward[0] += 50.0f;
-                    this->info_list->SetRecentP1(50.0f);
+                    this->newest_reward[0] += 0.2f;
+                    this->info_list->SetRecentP1(0.2f);
                     return;
                 } else if (relevant_player == 1) {
-                    this->newest_reward[1] += 50.0f;
-                    this->info_list->SetRecentP2(50.0f);
+                    this->newest_reward[1] += 0.2f;
+                    this->info_list->SetRecentP2(0.2f);
                     return;
                 }
                 break;
             case 2:
                 //Hit event
                 if (relevant_player == 0) {
-                    this->newest_reward[0] += 80.0f;
-                    this->info_list->SetRecentP1(80.0f);
+                    this->newest_reward[0] += 0.2f;
+                    this->info_list->SetRecentP1(0.2f);
                     return;
                 } else if (relevant_player == 1) {
-                    this->newest_reward[1] += 80.0f;
-                    this->info_list->SetRecentP2(80.0f);
+                    this->newest_reward[1] += 0.2f;
+                    this->info_list->SetRecentP2(0.2f);
                     return;
                 }
                 break;
