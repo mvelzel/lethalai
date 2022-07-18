@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <array>
 #include <deque>
 #include "../environment/game_state.h"
 #include "../environment/input_handler.h"

@@ -3,7 +3,7 @@
 
 #include <ostream>
 #include <Windows.h>
-#include <vector>
+#include <array>
 
 namespace environment {
     class Player {
@@ -24,6 +24,8 @@ namespace environment {
 
             static const int kAnimationStateCount = 42;
             static const int kCharacterStateCount = 20;
+
+            static const int kStateSize = 8 + kAnimationStateCount + kCharacterStateCount;
 
             static const int kMaxVelocity = 10000000;
             static const int kMinVelocity = -10000000;
@@ -54,7 +56,7 @@ namespace environment {
             int GetStocks();
             void SetStocks(int stocks);
 
-            std::vector<float> NormalizeFloats();
+            std::array<float, Player::kStateSize> NormalizeFloats();
 
             friend std::ostream& operator<<(std::ostream& output, const Player& player);
     };

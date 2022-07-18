@@ -1,0 +1,14 @@
+06430000:
+mov ecx, 14977970
+mov esi, ecx
+mov byte ptr [esi+104], 01
+mov ebx, 14A14700
+mov eax, [esi]
+mov edx, [eax+A8]
+//mov edi, 15103318
+push lethalleague.exe+3B9F8
+push 00CFF401
+push ecx
+push 00CFF390
+call lethalleague.exe+3BD60
+ret

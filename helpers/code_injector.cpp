@@ -130,7 +130,7 @@ namespace helpers {
                 std::cout << GetLastError() << std::endl;
             }
         } else {
-            std::cout << "Cannot load speedhack, speedhack-i386.dll not found." << std::endl;
+            //std::cout << "Cannot load speedhack, speedhack-i386.dll not found." << std::endl;
         }
     }
 }

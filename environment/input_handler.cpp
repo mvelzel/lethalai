@@ -331,7 +331,7 @@ namespace environment {
             
         for (InputAction & action : actions) {
             if (action == InputAction::kNone)
-                continue;;
+                continue;
             int key_press = InputHandler::ActionToKeyPress(action);
             switch (player_number) {
                 case 1: actions_pressed_p1[action] = key_press; break;

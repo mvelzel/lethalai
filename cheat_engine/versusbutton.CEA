@@ -1,0 +1,12 @@
+00D70000:
+push 0
+push 0
+mov ebx, 1355F6A8
+mov ecx, 14C19C88
+mov edx, lethalleague.exe+D1370
+//mov esi, 147C7060
+//mov edi, 14C19D24
+push ebx
+mov eax, esp
+call lethalleague.exe+D1370
+ret

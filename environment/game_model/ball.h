@@ -2,7 +2,7 @@
 #define BALL_H
 
 #include <ostream>
-#include <vector>
+#include <array>
 
 namespace environment {
     class Ball {
@@ -25,6 +25,8 @@ namespace environment {
             static const int kMinHitstunCountdown = -2000;
             static const int kMaxHitstunCountdown = 200000;
 
+            static const int kStateSize = 10;
+
             int GetXCoord();
             void SetXCoord(int x_coord);
             int GetYCoord();
@@ -40,7 +42,7 @@ namespace environment {
             int GetHitstunCountdown();
             void SetHitstunCountdown(int hitstun_countdown);
 
-            std::vector<float> NormalizeFloats(int player_count);
+            std::array<float, Ball::kStateSize> NormalizeFloats();
 
             friend std::ostream& operator<<(std::ostream& output, const Ball& H);
     };

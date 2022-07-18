@@ -1,0 +1,7 @@
+00E20000:
+mov ecx, 14D2EC58
+mov esi, ecx
+mov eax, [esi]
+mov edx, [eax+A0]
+call lethalleague.exe+3BD00
+ret

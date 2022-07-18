@@ -20,12 +20,14 @@ namespace rl {
         this->swap_steps_counter = 0;
         this->active_agent = 0;
 
-        //this->agent1 = new ActorCriticAgent(0.99f, 0.0001f, 148, 32, 8);
-        //this->agent2 = new ActorCriticAgent(0.99f, 0.0001f, 148, 32, 8);
-        this->agent1 = new DuelingDeepQAgent(0.99f, 1.0f, 0.001f, 148, 32,
+        this->agent1 = new ActorCriticAgent(0.99f, 0.00005f, 148, 32,
                 ActionTranslator::total_action_count);
-        this->agent2 = new DuelingDeepQAgent(0.99f, 1.0f, 0.001f, 148, 32,
+        this->agent2 = new ActorCriticAgent(0.99f, 0.00005f, 148, 32,
                 ActionTranslator::total_action_count);
+        //this->agent1 = new DuelingDeepQAgent(0.99f, 1.0f, 0.001f, 148, 32,
+        //        ActionTranslator::total_action_count);
+        //this->agent2 = new DuelingDeepQAgent(0.99f, 1.0f, 0.001f, 148, 32,
+        //        ActionTranslator::total_action_count);
 
         if (!continue_training) {
             this->SavePolicy();
@@ -44,8 +46,10 @@ namespace rl {
             environment::GameState* observation) {
         std::vector<std::vector<environment::InputAction>> actions;
 
-        std::vector<float> obs_agent1 = observation->NormalizeFloats(0);
-        std::vector<float> obs_agent2 = observation->NormalizeFloats(1);
+        std::array<float, environment::GameState::kStateSize> obs1 = observation->NormalizeFloats(0);
+        std::array<float, environment::GameState::kStateSize> obs2 = observation->NormalizeFloats(1);
+        std::vector<float> obs_agent1 { obs1.begin(), obs1.end() };
+        std::vector<float> obs_agent2 { obs1.begin(), obs1.end() };
 
         std::vector<environment::InputAction> agent1_actions =
             ActionTranslator::TranslateAction(this->agent1->ChooseAction(obs_agent1));
@@ -66,13 +70,17 @@ namespace rl {
         if (this->is_demonstration)
             return;
         if (this->active_agent == 0) {
-            std::vector<float> obs_agent1 = observation->NormalizeFloats(0);
-            std::vector<float> new_obs_agent1 = new_observation->NormalizeFloats(0);
+            std::array<float, environment::GameState::kStateSize> obs = observation->NormalizeFloats(0);
+            std::array<float, environment::GameState::kStateSize> new_obs = observation->NormalizeFloats(0);
+            std::vector<float> obs_agent1 { obs.begin(), obs.end() };
+            std::vector<float> new_obs_agent1 { new_obs.begin(), new_obs.end() };
             this->agent1->StoreTransition(obs_agent1, actions[0][0], rewards[0], 
                     new_obs_agent1, done);
         } else if (this->active_agent == 1) {
-            std::vector<float> obs_agent2 = observation->NormalizeFloats(1);
-            std::vector<float> new_obs_agent2 = new_observation->NormalizeFloats(1);
+            std::array<float, environment::GameState::kStateSize> obs = observation->NormalizeFloats(1);
+            std::array<float, environment::GameState::kStateSize> new_obs = observation->NormalizeFloats(1);
+            std::vector<float> obs_agent2 { obs.begin(), obs.end() };
+            std::vector<float> new_obs_agent2 { new_obs.begin(), new_obs.end() };
             this->agent2->StoreTransition(obs_agent2, actions[1][0], rewards[1], 
                     new_obs_agent2, done);
         }

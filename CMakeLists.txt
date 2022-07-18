@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 project(LethalAI)
 
-set(CMAKE_PREFIX_PATH "D:/pytorch;D:/freeglut")
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_PREFIX_PATH "Q:/pytorch;Q:/freeglut")
 
 find_package(Torch REQUIRED)
 find_package(OpenGL REQUIRED)
@@ -20,7 +21,7 @@ add_subdirectory(gym)
 add_subdirectory(rl)
 add_subdirectory(graphics)
 
-add_library(LethalAI SHARED lethalai.cpp)
+add_library(LethalAI SHARED lethalai.cpp lethalai.def)
 
 target_link_libraries(LethalAI PRIVATE StateObserver)
 target_link_libraries(LethalAI PRIVATE InputHandler)

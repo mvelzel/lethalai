@@ -1,0 +1,6 @@
+LIBRARY LethalAI
+EXPORTS
+    TestFunction
+    ExportInit
+    ExportReset
+    ExportStep

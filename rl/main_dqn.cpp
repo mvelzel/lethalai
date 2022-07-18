@@ -14,7 +14,7 @@ namespace rl {
         gym::LethalGym* lethal_gym = new gym::LethalGym();
         std::vector<float> scores_p1;
         std::vector<float> scores_p2;
-        int n_games = 1000;
+        int n_games = 5000;
         //std::vector<float> eps_history;
 
         MultiAgent multi_agent = MultiAgent(2000, 10000, 1000, 10, 0.5, lethal_gym, false, false);

@@ -1,0 +1,63 @@
+lobby game start: lethalleague.exe+3BD60
+
+set P1 value: lethalleague.exe+10D544 --- PlayerCharacterTab
+    - Does not affect lobby start
+set P1 value: lethalleague.exe+34ADD --- Unknown name
+    - Does not affect lobby start
+set P1 value: lethalleague.exe+399BC -- CharacterFullShot
+    - Does not affect lobby start
+
+set P1 value: lethalleague.exe+C9D68 --- LobbyPlayerSlot
+    - Affects lobby start (BYTE VALUE)
+
+set stocks value: lethalleague.exe+A2316 --- GameOptionsScreen
+    - Affects lobby start (BYTE VALUE)
+
+lethalleague.exe+3B890 -- contains CharacterSelectState (ECX)
+    - Every frame while in lobby
+
+start game button: lethalleague.exe+38D00
+start game code:
+    mov ecx, 14D2EC58 (ECX, CharacterSelectState)
+    mov esi, ecx
+    mov eax, [esi]
+    mov edx, [eax+A0]
+    call lethalleague.exe+3BD00
+    ret
+
+versus button: lethalleague.exe+D02D0
+versus button: lethalleague.exe+D1370
+enter lobby code (causes long freeze?):
+    push 0
+    push 0
+    mov ebx, 131CF6A8
+    mov ecx, 148A9D24
+    mov edx, 0
+    mov esi, 144576A0
+    mov edi, 148A9D00
+    push ebx
+    mov eax, esp
+    call lethalleague.exe+DD530
+    ret
+alternative (still causes freeze):
+    push 0
+    push 0
+    mov ebx, 1355F6A8 -- [[[["sfml-system-2.dll"+A4D4]+4]+10]+700]+640
+    mov ecx, 14C19C88 -- lethalleague.exe+D0C76 (code cave ECX)
+    mov edx, lethalleague.exe+D1370
+    //mov esi, 147C7060
+    //mov edi, 14C19D24
+    push ebx
+    mov eax, esp
+    call lethalleague.exe+D1370
+    ret
+------------------------------------------------------
+HOW TO START THE LOBBY
+
+Get into player select
+    TODO set player and settings values
+Set CharacterSelectState+0x104 (ECX+104) to 01 (byte)
+Get into map select screen
+    TODO set selected map
+Set lethalleague.exe+3B993 edx <-- 2
+-------------------------------------------------------
